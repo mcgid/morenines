@@ -74,9 +74,12 @@ class IndexParser():
 def parse_preamble(file_):
     version_line = file_.readline()
 
-    version = (version_line.split(':', 1)[1]).strip()
+    version_key, version_value = [e.strip() for e in version_line.split(':', 1)]
 
-    return version
+    if version_key != 'version' or version_value == '':
+        raise Exception("Invalid file format: invalid preamble (no version)")
+
+    return version_value
 
 def split_lines(lines, delim, num_fields):
     """Split each element in the sequence 'lines' into its component fields."""
