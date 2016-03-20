@@ -1,7 +1,7 @@
 import os
 import sys
 
-from morenines.indexparser import Index, IndexParser
+from morenines.index import Index
 from morenines.util import get_files, get_hash
 
 def create(root_path):
@@ -18,6 +18,4 @@ def create(root_path):
         # We store the relative path in the index
         index.add(path, hash_)
 
-    parser = IndexParser()
-
-    parser.write(index, sys.stdout)
+    index.write(sys.stdout)

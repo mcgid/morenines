@@ -1,12 +1,12 @@
 import os
 
-from morenines.indexparser import Index, IndexParser
+from morenines.index import Index
 from morenines.util import get_files, get_hash
 
 def verify(root_path, index_path):
-    parser = IndexParser()
+    index = Index(root_path)
 
-    index = parser.read(index_path)
+    index.read(index_path)
 
     current_files = get_files(root_path)
 

@@ -1,5 +1,5 @@
 import morenines.remote as remote
-import morenines.indexparser as indexparser
+from morenines.index import Index
 
 def push(root_path, index_path, remotes):
     # XXX: DO SANITY CHECK: run a local status() check
@@ -7,9 +7,9 @@ def push(root_path, index_path, remotes):
     for remote in remotes:
         remote_blobs = remote.get_blob_list()
 
-        parser = indexparser.IndexParser()
+        index = Index(root_path)
 
-        index = parser.read(index_path)
+        index.read(index_path)
 
         files_to_upload = []
 

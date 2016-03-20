@@ -8,6 +8,9 @@ class Index(object):
     def __init__(self, root_path):
         self.headers = collections.OrderedDict()
         self.files = collections.OrderedDict()
+        self.preamble = {
+            'version': "1",
+        }
 
         self.headers['root_path'] = root_path
 
@@ -27,40 +30,26 @@ class Index(object):
     def remove(self, path):
         del self.files[path]
 
-
-class IndexParser():
-    def __init__(self):
-        self.preamble = {
-            'version': "1",
-        }
-
     def read(self, path):
-        index = Index(path)
-
         with open(path, 'r') as f:
             version = parse_preamble(f)
 
             if version != self.preamble['version']:
                 raise Exception("Incorrect IndexParser for file: {} (version {} parser required)".format(path, version))
 
-            index.headers = parse_headers(f)
-            index.files = parse_files(f)
+            self.headers = parse_headers(f)
+            self.files = parse_files(f)
 
-        return index
-
-    def write(self, index, file_handle):
+    def write(self, file_handle):
         # The date header is the moment the index is written to disk
-        index.headers['date'] = datetime.datetime.utcnow().isoformat()
+        self.headers['date'] = datetime.datetime.utcnow().isoformat()
 
-        # The preamble is at the start of the file, to identify and version the
-        # file format
-        # TODO: make IndexParser just read the preamble, and then call another
-        # version-specific class according to the version in the preamble
         for key, value in self.preamble.iteritems():
             file_handle.write("{}: {}\n".format(key, value))
 
-        for line in index.itercontent():
+        for line in self.itercontent():
             file_handle.write(line)
+
 
 
 ##############################
