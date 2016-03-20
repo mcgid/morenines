@@ -1,11 +1,7 @@
 import os
 import collections
-import hashlib
-import tempfile
-import errno
 import datetime
 import itertools
-import copy
 
 
 class Index(object):
