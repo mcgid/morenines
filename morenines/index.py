@@ -5,13 +5,14 @@ import itertools
 
 
 class Index(object):
+    version = 1
+
     def __init__(self, root_path):
         self.headers = collections.OrderedDict()
         self.files = collections.OrderedDict()
-        self.preamble = {
-            'version': "1",
-        }
 
+        # Default to version in class; if reading file, this will get overwritten
+        self.headers['version'] = Index.version
         self.headers['root_path'] = root_path
 
     def itercontent(self):
@@ -32,20 +33,19 @@ class Index(object):
 
     def read(self, path):
         with open(path, 'r') as f:
-            version = parse_preamble(f)
-
-            if version != self.preamble['version']:
-                raise Exception("Incorrect IndexParser for file: {} (version {} parser required)".format(path, version))
-
             self.headers = parse_headers(f)
+
+            if 'version' not in self.headers:
+                raise Exception("Invalid file format: no version header")
+
+            if self.headers['version'] != str(Index.version):
+                raise Exception("Unsupported file format version: file is {}, parser is {}".format(self.headers['version'], Index.version))
+
             self.files = parse_files(f)
 
     def write(self, file_handle):
         # The date header is the moment the index is written to disk
         self.headers['date'] = datetime.datetime.utcnow().isoformat()
-
-        for key, value in self.preamble.iteritems():
-            file_handle.write("{}: {}\n".format(key, value))
 
         for line in self.itercontent():
             file_handle.write(line)
@@ -55,16 +55,6 @@ class Index(object):
 ##############################
 # Index file parsing functions
 ##############################
-
-def parse_preamble(file_):
-    version_line = file_.readline()
-
-    version_key, version_value = [e.strip() for e in version_line.split(':', 1)]
-
-    if version_key != 'version' or version_value == '':
-        raise Exception("Invalid file format: invalid preamble (no version)")
-
-    return version_value
 
 def split_lines(lines, delim, num_fields):
     """Split each element in the sequence 'lines' into its component fields."""
