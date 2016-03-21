@@ -1,5 +1,4 @@
 import os
-import sys
 
 from morenines.index import Index
 from morenines.util import get_files, get_hash
@@ -18,4 +17,4 @@ def create(root_path):
         # We store the relative path in the index
         index.add(path, hash_)
 
-    index.write(sys.stdout)
+    return index
