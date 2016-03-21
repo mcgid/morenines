@@ -28,7 +28,7 @@ def create(root_path):
     index.write(sys.stdout)
 
 @main.command()
-@click.option('--index_path', required=True)
+@click.option('--index', 'index_path', required=True)
 @click.argument('root_path', nargs=1, default=os.getcwd())
 def verify(root_path, index_path):
     changed_files = morenines.verify.verify(root_path, index_path)
@@ -40,7 +40,7 @@ def verify(root_path, index_path):
 
 
 @main.command()
-@click.option('--index_path', required=True)
+@click.option('--index', 'index_path', required=True)
 @click.argument('root_path', nargs=1, default=os.getcwd())
 def status(root_path, index_path):
     new_files, missing_files = morenines.status.status(root_path, index_path)
@@ -56,7 +56,7 @@ def status(root_path, index_path):
 
 
 @main.command()
-@click.option('--index_path', required=True)
+@click.option('--index', 'index_path', required=True)
 @click.argument('root_path', nargs=1, default=os.getcwd())
 def push(root_path, index_path):
     remotes = [morenines.remote.FakeRemote(None)]
