@@ -23,13 +23,4 @@ def verify(root_path, index_path):
         if current_hash != old_hash:
             changed_files.append(path)
 
-    print_files("New Files", new_files)
-    print_files("Changed Files", changed_files)
-    print_files("Missing Files", missing_files)
-
-
-def print_files(name, files):
-    print "{}:".format(name)
-
-    for path in files:
-        print "  {}".format(path)
+    return changed_files, missing_files
