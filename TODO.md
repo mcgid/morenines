@@ -69,7 +69,14 @@ Add:
 - `morenines remove` or `morenines delete` or `morenines rm` or whatever (probably `remove`)
 
 - `morenines push`
-    - Upload to configured remote
+    - get list of blobs from remote
+    - open index file
+    - for path in index:
+        - if hash not in remote blobs:
+            add path to upload list
+    - for path in upload list:
+        - generate md5 [GCS -- can AWS use this? b2?]
+        - upload with md5
 
 - `morenines pull <path>` or `morenines download <path>` or `morenines fetch <path>` or
   something (probably not "pull", since push/pull args would be asymmetrical)
