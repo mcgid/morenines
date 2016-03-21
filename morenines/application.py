@@ -31,12 +31,9 @@ def create(root_path):
 @click.option('--index', 'index_path', required=True)
 @click.argument('root_path', nargs=1, default=os.getcwd())
 def verify(root_path, index_path):
-    changed_files = morenines.verify.verify(root_path, index_path)
+    changed_files, missing_files = morenines.verify.verify(root_path, index_path)
 
-    if changed_files:
-        morenines.output.print_filelist("Changed files (hash differs from index):", changed_files)
-    else:
-        morenines.output.print_message("Index is up-to-date (no changes)")
+    morenines.output.print_filelists(None, changed_files, missing_files)
 
 
 @main.command()
@@ -44,15 +41,7 @@ def verify(root_path, index_path):
 @click.argument('root_path', nargs=1, default=os.getcwd())
 def status(root_path, index_path):
     new_files, missing_files = morenines.status.status(root_path, index_path)
-
-    if new_files:
-        morenines.output.print_filelist("Added files (not in index):", new_files)
-
-    if missing_files:
-        morenines.output.print_filelist("Missing files:", missing_files)
-
-    if not new_files and not missing_files:
-        morenines.output.print_message("Index is up-to-date (no changes)")
+    morenines.output.print_filelists(new_files, None, missing_files)
 
 
 @main.command()
