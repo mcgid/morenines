@@ -6,6 +6,7 @@ import morenines.create
 import morenines.verify
 import morenines.remote
 import morenines.push
+import morenines.update
 import morenines.output
 
 #root_path_type = click.Path(
@@ -60,6 +61,15 @@ def status(root_path, index_path):
 def push(root_path, index_path):
     remotes = [morenines.remote.FakeRemote(None)]
     morenines.push.push(root_path, index_path, remotes)
+
+
+@main.command()
+@common_params('index', 'root_path')
+@click.option('--remove/--no-remove', 'remove_missing', default=False)
+def update(root_path, index_path, remove_missing):
+    index = morenines.update.update(root_path, index_path, remove_missing)
+
+    index.write(sys.stdout)
 
 if __name__ == '__main__':
     main()
