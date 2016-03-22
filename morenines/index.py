@@ -47,9 +47,16 @@ class Index(object):
         # The date header is the moment the index is written to disk
         self.headers['date'] = datetime.datetime.utcnow().isoformat()
 
-        for line in self.itercontent():
-            file_handle.write(line)
+        # Write headers -- but sort the keys before writing
+        for key in sorted(self.headers):
+            file_handle.write("{}: {}\n".format(key, self.headers[key]))
 
+        # Separate the headers from the files list with a blank line
+        file_handle.write("\n")
+
+        # Write files and hashes -- but sort the paths before writing
+        for path in sorted(self.files):
+            file_handle.write("{} {}\n".format(self.files[path], path))
 
 
 ##############################
