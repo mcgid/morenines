@@ -1,15 +1,17 @@
+import click
+
 def print_message(message):
     print message
 
 
 def print_filelist(header, filelist, footer=None):
-    print header
+    click.echo(header)
 
     for line in filelist:
-        print "  {}".format(line)
+        click.echo("  {}".format(line))
 
     if footer:
-        print footer
+        click.echo(footer)
 
 
 def print_filelists(new_files, changed_files, missing_files):
