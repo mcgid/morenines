@@ -6,10 +6,4 @@ def status(root_path, index_path):
 
     index.read(index_path)
 
-    current_files = get_files(root_path)
-
-    new_files = [path for path in current_files if path not in index.files]
-    
-    missing_files = [path for path in index.files.iterkeys() if path not in current_files]
-
-    return new_files, missing_files
+    return get_new_and_missing(root_path, index)

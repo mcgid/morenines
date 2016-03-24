@@ -30,3 +30,13 @@ def get_hash(path):
         h.update(f.read())
 
     return h.hexdigest()
+
+
+def get_new_and_missing(path, index):
+    current_files = get_files(path)
+
+    new_files = [path for path in current_files if path not in index.files]
+
+    missing_files = [path for path in index.files.iterkeys() if path not in current_files]
+
+    return new_files, missing_files

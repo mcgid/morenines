@@ -10,7 +10,7 @@ def verify(root_path, index_path):
 
     index.read(index_path)
 
-    new_files, missing_files = morenines.status.status(root_path, index_path)
+    new_files, missing_files = morenines.util.get_new_and_missing(root_path, index)
 
     changed_files = []
 
