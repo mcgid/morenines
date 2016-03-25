@@ -2,13 +2,10 @@ import click
 import os
 import sys
 
-import morenines.create
-import morenines.verify
-import morenines.remote
-import morenines.push
-import morenines.update
-import morenines.output
-
+from morenines.index import Index
+from morenines.remote import FakeRemote
+from morenines.util import get_files, get_hash, get_new_and_missing
+from morenines.output import print_filelists
 
 # Defining this on its own makes the _common_params definition a little cleaner and nicer
 _root_path_type = click.Path( exists=True, file_okay=False, dir_okay=True, resolve_path=True)
@@ -34,37 +31,81 @@ def main():
 @main.command()
 @common_params('root_path')
 def create(root_path):
-    index = morenines.create.create(root_path)
+    index = Index()
+
+    index.headers['root_path'] = root_path
+
+    files = get_files(root_path)
+
+    index.add(files)
 
     index.write(sys.stdout)
 
 @main.command()
 @common_params('index', 'root_path')
 def verify(root_path, index_file):
-    changed_files, missing_files = morenines.verify.verify(root_path, index_file)
+    index = Index.read(index_file)
 
-    morenines.output.print_filelists(None, changed_files, missing_files)
+    new_files, missing_files = get_new_and_missing(root_path, index)
+
+    changed_files = []
+
+    for path, old_hash in index.files.iteritems():
+        if path in missing_files:
+            continue
+
+        current_hash = get_hash(os.path.join(root_path, path))
+
+        if current_hash != old_hash:
+            changed_files.append(path)
+
+    print_filelists(None, changed_files, missing_files)
 
 
 @main.command()
 @common_params('index', 'root_path')
 def status(root_path, index_file):
-    new_files, missing_files = morenines.status.status(root_path, index_file)
-    morenines.output.print_filelists(new_files, None, missing_files)
+    index = Index.read(index_file)
+
+    new_files, missing_files = get_new_and_missing(root_path, index)
+
+    print_filelists(new_files, None, missing_files)
 
 
 @main.command()
 @common_params('index', 'root_path')
 def push(root_path, index_file):
-    remotes = [morenines.remote.FakeRemote(None)]
-    morenines.push.push(root_path, index_file, remotes)
+    remotes = [FakeRemote(None)]
+
+    # XXX: DO SANITY CHECK: run a local status() check
+
+    for remote in remotes:
+        remote_blobs = remote.get_blob_list()
+
+        index = Index.read(index_file)
+
+        files_to_upload = []
+
+        for path, hash_ in index.files.iteritems():
+            if hash_ not in remote_blobs:
+                files_to_upload.append(path)
+
+        for path in files_to_upload:
+            remote.upload(path)
 
 
 @main.command()
 @common_params('index', 'root_path')
 @click.option('--remove/--no-remove', 'remove_missing', default=False)
 def update(root_path, index_file, remove_missing):
-    index = morenines.update.update(root_path, index_file, remove_missing)
+    index = Index.read(index_file)
+
+    new_files, missing_files = get_new_and_missing(root_path, index)
+
+    index.add(new_files)
+
+    if remove_missing is True:
+        index.remove(missing_files)
 
     index.write(sys.stdout)
 
