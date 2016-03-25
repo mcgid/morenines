@@ -3,6 +3,8 @@ import collections
 import datetime
 import itertools
 
+from morenines.util import get_hash
+
 
 class Index(object):
     version = 1
@@ -25,11 +27,17 @@ class Index(object):
 
         return itertools.chain(header_strings, separator, file_strings)
 
-    def add(self, path, hash_):
-        self.files[path] = hash_
+    def add(self, paths):
+        for path in paths:
+            # To hash the file, we need its absolute path
+            abs_path = os.path.join(self.headers['root_path'], path)
 
-    def remove(self, path):
-        del self.files[path]
+            # We store the relative path in the index, not the absolute
+            self.files[path] = get_hash(abs_path)
+
+    def remove(self, paths):
+        for path in paths:
+            del self.files[path]
 
     def read(self, path):
         with open(path, 'r') as f:
