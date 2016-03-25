@@ -28,17 +28,16 @@ class Index(object):
         for path in paths:
             del self.files[path]
 
-    def read(self, path):
-        with open(path, 'r') as f:
-            self.headers = parse_headers(f)
+    def read(self, stream):
+        self.headers = parse_headers(stream)
 
-            if 'version' not in self.headers:
-                raise Exception("Invalid file format: no version header")
+        if 'version' not in self.headers:
+            raise Exception("Invalid file format: no version header")
 
-            if self.headers['version'] != str(Index.version):
-                raise Exception("Unsupported file format version: file is {}, parser is {}".format(self.headers['version'], Index.version))
+        if self.headers['version'] != str(Index.version):
+            raise Exception("Unsupported file format version: file is {}, parser is {}".format(self.headers['version'], Index.version))
 
-            self.files = parse_files(f)
+        self.files = parse_files(stream)
 
     def write(self, file_handle):
         # The date header is the moment the index is written to disk
