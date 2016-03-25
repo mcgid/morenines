@@ -17,7 +17,7 @@ import morenines.output
 #)
 
 _common_params = {
-    'index': click.option('--index', 'index_path', required=True),
+    'index': click.option('--index', 'index_file', type=click.File(), required=True),
     'root_path': click.argument('root_path', nargs=1, default=os.getcwd()),
 }
 
@@ -43,31 +43,31 @@ def create(root_path):
 
 @main.command()
 @common_params('index', 'root_path')
-def verify(root_path, index_path):
-    changed_files, missing_files = morenines.verify.verify(root_path, index_path)
+def verify(root_path, index_file):
+    changed_files, missing_files = morenines.verify.verify(root_path, index_file)
 
     morenines.output.print_filelists(None, changed_files, missing_files)
 
 
 @main.command()
 @common_params('index', 'root_path')
-def status(root_path, index_path):
-    new_files, missing_files = morenines.status.status(root_path, index_path)
+def status(root_path, index_file):
+    new_files, missing_files = morenines.status.status(root_path, index_file)
     morenines.output.print_filelists(new_files, None, missing_files)
 
 
 @main.command()
 @common_params('index', 'root_path')
-def push(root_path, index_path):
+def push(root_path, index_file):
     remotes = [morenines.remote.FakeRemote(None)]
-    morenines.push.push(root_path, index_path, remotes)
+    morenines.push.push(root_path, index_file, remotes)
 
 
 @main.command()
 @common_params('index', 'root_path')
 @click.option('--remove/--no-remove', 'remove_missing', default=False)
-def update(root_path, index_path, remove_missing):
-    index = morenines.update.update(root_path, index_path, remove_missing)
+def update(root_path, index_file, remove_missing):
+    index = morenines.update.update(root_path, index_file, remove_missing)
 
     index.write(sys.stdout)
 

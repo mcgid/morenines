@@ -5,10 +5,10 @@ import morenines.status
 from morenines.index import Index
 from morenines.util import get_files, get_hash
 
-def verify(root_path, index_path):
+def verify(root_path, index_file):
     index = Index(root_path)
 
-    index.read(index_path)
+    index.read(index_file)
 
     new_files, missing_files = morenines.util.get_new_and_missing(root_path, index)
 

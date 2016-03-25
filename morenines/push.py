@@ -1,7 +1,7 @@
 import morenines.remote as remote
 from morenines.index import Index
 
-def push(root_path, index_path, remotes):
+def push(root_path, index_file, remotes):
     # XXX: DO SANITY CHECK: run a local status() check
 
     for remote in remotes:
@@ -9,7 +9,7 @@ def push(root_path, index_path, remotes):
 
         index = Index(root_path)
 
-        index.read(index_path)
+        index.read(index_file)
 
         files_to_upload = []
 
