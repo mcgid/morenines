@@ -43,20 +43,20 @@ class Index(object):
         for path in paths:
             del self.files[path]
 
-    def write(self, file_handle):
+    def write(self, stream):
         # The date header is the moment the index is written to disk
         self.headers['date'] = datetime.datetime.utcnow().isoformat()
 
         # Write headers -- but sort the keys before writing
         for key in sorted(self.headers):
-            file_handle.write("{}: {}\n".format(key, self.headers[key]))
+            stream.write("{}: {}\n".format(key, self.headers[key]))
 
         # Separate the headers from the files list with a blank line
-        file_handle.write("\n")
+        stream.write("\n")
 
         # Write files and hashes -- but sort the paths before writing
         for path in sorted(self.files):
-            file_handle.write("{} {}\n".format(self.files[path], path))
+            stream.write("{} {}\n".format(self.files[path], path))
 
 
 ##############################
