@@ -6,9 +6,7 @@ from morenines.index import Index
 from morenines.util import get_files, get_hash, get_new_and_missing
 
 def verify(root_path, index_file):
-    index = Index(root_path)
-
-    index.read(index_file)
+    index = Index.read(index_file)
 
     new_files, missing_files = get_new_and_missing(root_path, index)
 

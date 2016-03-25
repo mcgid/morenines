@@ -7,9 +7,7 @@ def push(root_path, index_file, remotes):
     for remote in remotes:
         remote_blobs = remote.get_blob_list()
 
-        index = Index(root_path)
-
-        index.read(index_file)
+        index = Index.read(index_file)
 
         files_to_upload = []
 

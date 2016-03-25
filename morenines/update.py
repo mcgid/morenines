@@ -7,9 +7,7 @@ from morenines.util import get_files
 
 
 def update(root_path, index_file, remove_missing):
-    index = Index(root_path)
-
-    index.read(index_file)
+    index = Index.read(index_file)
 
     new_files, missing_files = morenines.status.status(root_path, index_file)
 

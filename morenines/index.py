@@ -8,13 +8,28 @@ from morenines.util import get_hash
 class Index(object):
     version = 1
 
-    def __init__(self, root_path):
+    @classmethod
+    def read(cls, stream):
+        index = cls()
+
+        index.headers = parse_headers(stream)
+
+        if 'version' not in index.headers:
+            raise Exception("Invalid file format: no version header")
+
+        if index.headers['version'] != str(cls.version):
+            raise Exception("Unsupported file format version: file is {}, parser is {}".format(index.headers['version'], cls.version))
+
+        index.files = parse_files(stream)
+
+        return index
+
+    def __init__(self):
         self.headers = collections.OrderedDict()
         self.files = collections.OrderedDict()
 
         # Default to version in class; if reading file, this will get overwritten
         self.headers['version'] = Index.version
-        self.headers['root_path'] = root_path
 
     def add(self, paths):
         for path in paths:
@@ -27,17 +42,6 @@ class Index(object):
     def remove(self, paths):
         for path in paths:
             del self.files[path]
-
-    def read(self, stream):
-        self.headers = parse_headers(stream)
-
-        if 'version' not in self.headers:
-            raise Exception("Invalid file format: no version header")
-
-        if self.headers['version'] != str(Index.version):
-            raise Exception("Unsupported file format version: file is {}, parser is {}".format(self.headers['version'], Index.version))
-
-        self.files = parse_files(stream)
 
     def write(self, file_handle):
         # The date header is the moment the index is written to disk
