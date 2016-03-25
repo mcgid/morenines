@@ -1,7 +1,6 @@
 import os
 import collections
 import datetime
-import itertools
 
 from morenines.util import get_hash
 
@@ -16,16 +15,6 @@ class Index(object):
         # Default to version in class; if reading file, this will get overwritten
         self.headers['version'] = Index.version
         self.headers['root_path'] = root_path
-
-    def itercontent(self):
-        """Return an iterator over the content,
-        converted to strings for writing to disk"""
-
-        header_strings = ("{}: {}\n".format(k, v) for k, v in self.headers.iteritems())
-        separator = ("\n",)
-        file_strings = ("{} {}\n".format(hash_, path) for path, hash_ in self.files.iteritems())
-
-        return itertools.chain(header_strings, separator, file_strings)
 
     def add(self, paths):
         for path in paths:
