@@ -1,5 +1,5 @@
 from morenines.index import Index
-from morenines.util import get_files
+from morenines.util import get_files, get_new_and_missing
 
 def status(root_path, index_file):
     index = Index(root_path)
