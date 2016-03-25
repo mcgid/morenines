@@ -9,16 +9,13 @@ import morenines.push
 import morenines.update
 import morenines.output
 
-#root_path_type = click.Path(
-#    exists=True,
-#    file_okay=False,
-#    dir_okay=True,
-#    resolve_path=True,
-#)
+
+# Defining this on its own makes the _common_params definition a little cleaner and nicer
+_root_path_type = click.Path( exists=True, file_okay=False, dir_okay=True, resolve_path=True)
 
 _common_params = {
     'index': click.option('--index', 'index_file', type=click.File(), required=True),
-    'root_path': click.argument('root_path', nargs=1, default=os.getcwd()),
+    'root_path': click.argument('root_path', nargs=1, default=os.getcwd(), type=_root_path_type),
 }
 
 def common_params(*param_names):
