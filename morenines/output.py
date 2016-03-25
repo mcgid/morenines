@@ -7,7 +7,7 @@ def print_message(message):
 def print_filelist(header, filelist, colour=None):
     click.echo(header)
 
-    for line in filelist:
+    for line in sorted(filelist):
         if colour:
             line = click.style(line, fg=colour)
 
