@@ -12,6 +12,7 @@ _root_path_type = click.Path( exists=True, file_okay=False, dir_okay=True, resol
 
 _common_params = {
     'index': click.option('--index', 'index_file', type=click.File(), required=True),
+    'force': click.option('--force/--no-force', 'force', default=False),
     'root_path': click.argument('root_path', nargs=1, default=os.getcwd(), type=_root_path_type),
 }
 
@@ -73,17 +74,18 @@ def status(root_path, index_file):
 
 
 @main.command()
-@common_params('index', 'root_path')
-def push(root_path, index_file):
+@common_params('index', 'root_path', 'force')
+def push(root_path, index_file, force):
     index = Index.read(index_file)
     remotes = [FakeRemote(None)]
 
     # Check for new or missing files before pushing remotely
     new_files, missing_files = get_new_and_missing(root_path, index)
 
-    if any([new_files, missing_files]):
+    if not force and any([new_files, missing_files]):
         error(
-            "Index file is out-of-date (there are new or missing files in the tree)"
+            "Index file is out-of-date (there are new or missing files in the tree)\n" +
+            "(Use --force option to push anyway)"
         )
 
     for remote in remotes:
