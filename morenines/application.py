@@ -5,7 +5,7 @@ import sys
 from morenines.index import Index
 from morenines.remote import FakeRemote
 from morenines.util import get_files, get_hash, get_new_and_missing
-from morenines.output import error, print_filelists
+from morenines.output import warning, error, print_filelists
 
 # Defining this on its own makes the _common_params definition a little cleaner and nicer
 _root_path_type = click.Path( exists=True, file_okay=False, dir_okay=True, resolve_path=True)
@@ -82,11 +82,12 @@ def push(root_path, index_file, force):
     # Check for new or missing files before pushing remotely
     new_files, missing_files = get_new_and_missing(root_path, index)
 
-    if not force and any([new_files, missing_files]):
-        error(
-            "Index file is out-of-date (there are new or missing files in the tree)\n" +
-            "(Use --force option to push anyway)"
-        )
+    if any([new_files, missing_files]):
+        message = "Index file is out-of-date (there are new or missing files in the tree)"
+        if force:
+            warning(message + "\n" + "Pushing anyway because --force was used")
+        else:
+            error(message + "\n" + "(Use --force option to push anyway)")
 
     for remote in remotes:
         remote_blobs = remote.get_blob_list()
