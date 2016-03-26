@@ -5,7 +5,7 @@ import sys
 from morenines.index import Index
 from morenines.remote import FakeRemote
 from morenines.util import get_files, get_hash, get_new_and_missing
-from morenines.output import print_filelists
+from morenines.output import error, print_filelists
 
 # Defining this on its own makes the _common_params definition a little cleaner and nicer
 _root_path_type = click.Path( exists=True, file_okay=False, dir_okay=True, resolve_path=True)
@@ -75,14 +75,19 @@ def status(root_path, index_file):
 @main.command()
 @common_params('index', 'root_path')
 def push(root_path, index_file):
+    index = Index.read(index_file)
     remotes = [FakeRemote(None)]
 
-    # XXX: DO SANITY CHECK: run a local status() check
+    # Check for new or missing files before pushing remotely
+    new_files, missing_files = get_new_and_missing(root_path, index)
+
+    if any([new_files, missing_files]):
+        error(
+            "Index file is out-of-date (there are new or missing files in the tree)"
+        )
 
     for remote in remotes:
         remote_blobs = remote.get_blob_list()
-
-        index = Index.read(index_file)
 
         files_to_upload = []
 
