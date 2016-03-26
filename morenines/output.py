@@ -1,7 +1,21 @@
 import click
+import sys
 
-def print_message(message):
-    print message
+def print_message(message, colour=None):
+    if colour:
+        message = click.style(message, fg=colour)
+
+    click.echo(message)
+
+def info(message):
+    print_message(message)
+
+def warning(message):
+    print_message("WARNING: " + message, 'yellow')
+
+def error(message):
+    print_message("ERROR: " + message, 'red')
+    sys.exit(1)
 
 
 def print_filelist(header, filelist, colour=None):
