@@ -1,20 +1,17 @@
 import click
 import sys
 
-def print_message(message, colour=None):
-    if colour:
-        message = click.style(message, fg=colour)
-
+def info(message):
     click.echo(message)
 
-def info(message):
-    print_message(message)
+def good(message):
+    click.secho("Warning: " + message, fg='green')
 
 def warning(message):
-    print_message("WARNING: " + message, 'yellow')
+    click.secho("WARNING: " + message, fg='yellow')
 
 def error(message):
-    print_message("ERROR: " + message, 'red')
+    click.secho("ERROR: " + message, fg='red')
     sys.exit(1)
 
 
@@ -30,7 +27,7 @@ def print_filelist(header, filelist, colour=None):
 
 def print_filelists(new_files, changed_files, missing_files):
     if not any([new_files, changed_files, missing_files]):
-        print_message("Index is up-to-date (no changes)")
+        good("Index is up-to-date (no changes)")
         return
 
     if new_files:
