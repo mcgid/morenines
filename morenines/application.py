@@ -4,11 +4,12 @@ import sys
 
 from morenines.index import Index
 from morenines.remote import FakeRemote
-from morenines.util import get_files, get_hash, get_new_and_missing
+from morenines.util import get_files, get_hash, get_new_and_missing, get_ignores, filter_ignores
 from morenines.output import warning, error, print_filelists
 
 # Defining this on its own makes the _common_params definition a little cleaner and nicer
 _root_path_type = click.Path( exists=True, file_okay=False, dir_okay=True, resolve_path=True)
+_ignores_path_type = click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True)
 
 _common_params = {
     'index': click.argument('index_file', type=click.File(), required=True),
@@ -30,13 +31,21 @@ def main():
 
 
 @main.command()
+@click.option('--ignores-file', 'ignores_path', type=_ignores_path_type)
 @click.argument('root_path', required=True, default=os.getcwd(), type=_root_path_type)
-def create(root_path):
+def create(ignores_path, root_path):
     index = Index()
 
     index.headers['root_path'] = root_path
 
     files = get_files(root_path)
+
+    if ignores_path:
+        index.headers['ignores_file'] = ignores_path
+
+        ignores = get_ignores(ignores_path)
+
+        files, ignored_files = filter_ignores(files, ignores)
 
     index.add(files)
 
