@@ -42,19 +42,18 @@ def print_filelists(new_files, changed_files, missing_files):
         return
 
     if new_files:
-        output("Added files (not in index):", new_files, WARN_COLOUR)
+        output("New files (not in index):", new_files, WARN_COLOUR)
 
         # Print a blank space between sections
-        if changed_files or missing_files:
-            click.echo()
-
-    if changed_files:
-        output("Changed files (hash differs from index):", changed_files, BAD_COLOUR)
-
-        # Print a blank space between sections
-        if missing_files:
+        if missing_files or changed_files:
             click.echo()
 
     if missing_files:
         output("Missing files:", missing_files, WARN_COLOUR)
 
+        # Print a blank space between sections
+        if changed_files:
+            click.echo()
+
+    if changed_files:
+        output("Changed files (hash differs from index):", changed_files, BAD_COLOUR)
