@@ -89,7 +89,7 @@ def verify(root_path, index_file):
         if current_hash != old_hash:
             changed_files.append(path)
 
-    print_filelists(None, changed_files, missing_files)
+    print_filelists(new_files, changed_files, missing_files)
 
 
 @main.command()
