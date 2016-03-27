@@ -16,6 +16,7 @@ _common_params = {
     'root_path': click.argument('root_path', nargs=1, default=os.getcwd(), type=_root_path_type),
 }
 
+
 def common_params(*param_names):
     def real_decorator(func):
         for param_name in param_names:
@@ -23,6 +24,7 @@ def common_params(*param_names):
         return func
 
     return real_decorator
+
 
 @click.group()
 def main():
@@ -41,6 +43,33 @@ def create(root_path):
     index.add(files)
 
     index.write(sys.stdout)
+
+
+@main.command()
+@common_params('index', 'root_path')
+@click.option('--remove/--no-remove', 'remove_missing', default=False)
+def update(root_path, index_file, remove_missing):
+    index = Index.read(index_file)
+
+    new_files, missing_files = get_new_and_missing(root_path, index)
+
+    index.add(new_files)
+
+    if remove_missing is True:
+        index.remove(missing_files)
+
+    index.write(sys.stdout)
+
+
+@main.command()
+@common_params('index', 'root_path')
+def status(root_path, index_file):
+    index = Index.read(index_file)
+
+    new_files, missing_files = get_new_and_missing(root_path, index)
+
+    print_filelists(new_files, None, missing_files)
+
 
 @main.command()
 @common_params('index', 'root_path')
@@ -61,16 +90,6 @@ def verify(root_path, index_file):
             changed_files.append(path)
 
     print_filelists(None, changed_files, missing_files)
-
-
-@main.command()
-@common_params('index', 'root_path')
-def status(root_path, index_file):
-    index = Index.read(index_file)
-
-    new_files, missing_files = get_new_and_missing(root_path, index)
-
-    print_filelists(new_files, None, missing_files)
 
 
 @main.command()
@@ -101,21 +120,6 @@ def push(root_path, index_file, force):
         for path in files_to_upload:
             remote.upload(path)
 
-
-@main.command()
-@common_params('index', 'root_path')
-@click.option('--remove/--no-remove', 'remove_missing', default=False)
-def update(root_path, index_file, remove_missing):
-    index = Index.read(index_file)
-
-    new_files, missing_files = get_new_and_missing(root_path, index)
-
-    index.add(new_files)
-
-    if remove_missing is True:
-        index.remove(missing_files)
-
-    index.write(sys.stdout)
 
 if __name__ == '__main__':
     main()
