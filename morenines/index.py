@@ -2,6 +2,7 @@ import os
 import collections
 import datetime
 
+from morenines.ignores import Ignores
 from morenines.util import get_hash
 
 
@@ -20,6 +21,11 @@ class Index(object):
         if index.headers['version'] != str(cls.version):
             raise Exception("Unsupported file format version: file is {}, parser is {}".format(index.headers['version'], cls.version))
 
+        if 'ignores_file' in index.headers:
+            index.ignores = Ignores.read(index.headers['ignores_file'])
+        else:
+            index.ignores = Ignores()
+
         index.files = parse_files(stream)
 
         return index
@@ -33,6 +39,9 @@ class Index(object):
 
     def add(self, paths):
         for path in paths:
+            if self.ignores.match(path):
+                continue
+
             # To hash the file, we need its absolute path
             abs_path = os.path.join(self.headers['root_path'], path)
 

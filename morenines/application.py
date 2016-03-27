@@ -3,8 +3,9 @@ import os
 import sys
 
 from morenines.index import Index
+from morenines.ignores import Ignores
 from morenines.remote import FakeRemote
-from morenines.util import get_files, get_hash, get_new_and_missing, get_ignores, filter_ignores
+from morenines.util import get_files, get_hash, get_new_and_missing
 from morenines.output import warning, error, print_filelists
 
 # Defining this on its own makes the _common_params definition a little cleaner and nicer
@@ -38,14 +39,12 @@ def create(ignores_path, root_path):
 
     index.headers['root_path'] = root_path
 
-    files = get_files(root_path)
-
     if ignores_path:
         index.headers['ignores_file'] = ignores_path
 
-        ignores = get_ignores(ignores_path)
+        index.ignores = Ignores.read(ignores_path)
 
-        files, ignored_files = filter_ignores(files, ignores)
+    files = get_files(index)
 
     index.add(files)
 
@@ -62,7 +61,7 @@ def update(index_file, remove_missing, new_root):
     if new_root:
         index.headers['root_path'] = new_root
 
-    new_files, missing_files = get_new_and_missing(index.headers['root_path'], index)
+    new_files, missing_files = get_new_and_missing(index)
 
     index.add(new_files)
 
@@ -77,7 +76,7 @@ def update(index_file, remove_missing, new_root):
 def status(index_file):
     index = Index.read(index_file)
 
-    new_files, missing_files = get_new_and_missing(index.headers['root_path'], index)
+    new_files, missing_files = get_new_and_missing(index)
 
     print_filelists(new_files, None, missing_files)
 
@@ -87,7 +86,7 @@ def status(index_file):
 def verify(index_file):
     index = Index.read(index_file)
 
-    new_files, missing_files = get_new_and_missing(index.headers['root_path'], index)
+    new_files, missing_files = get_new_and_missing(index)
 
     changed_files = []
 
@@ -111,7 +110,7 @@ def push(index_file, force):
     remotes = [FakeRemote(None)]
 
     # Check for new or missing files before pushing remotely
-    new_files, missing_files = get_new_and_missing(index.headers['root_path'], index)
+    new_files, missing_files = get_new_and_missing(index)
 
     if any([new_files, missing_files]):
         message = "Index file is out-of-date (there are new or missing files in the tree)"
