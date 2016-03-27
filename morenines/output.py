@@ -15,7 +15,7 @@ def clear_output_colour():
     click.secho('', nl=False, reset=True)
 
 
-def output(message, items=[], colour=None):
+def output(message, colour=None, items=[]):
     if colour:
         set_output_colour(colour)
 
@@ -28,11 +28,11 @@ def output(message, items=[], colour=None):
 
 
 def warning(message, items=[]):
-    output("WARNING: " + message, items, WARN_COLOUR)
+    output("WARNING: " + message, WARN_COLOUR, items)
 
 
 def error(message, items=[]):
-    output("ERROR: " + message, items, BAD_COLOUR)
+    output("ERROR: " + message, BAD_COLOUR, items)
     sys.exit(1)
 
 
@@ -42,18 +42,18 @@ def print_filelists(new_files, changed_files, missing_files):
         return
 
     if new_files:
-        output("New files (not in index):", new_files, WARN_COLOUR)
+        output("New files (not in index):", WARN_COLOUR, new_files)
 
         # Print a blank space between sections
         if missing_files or changed_files:
             click.echo()
 
     if missing_files:
-        output("Missing files:", missing_files, WARN_COLOUR)
+        output("Missing files:", WARN_COLOUR, missing_files)
 
         # Print a blank space between sections
         if changed_files:
             click.echo()
 
     if changed_files:
-        output("Changed files (hash differs from index):", changed_files, BAD_COLOUR)
+        output("Changed files (hash differs from index):", BAD_COLOUR, changed_files)
