@@ -15,14 +15,24 @@ def error(message):
     sys.exit(1)
 
 
+def set_output_colour(colour):
+    # Print nothing except the ANSI escape sequence
+    click.secho('', nl=False, fg=colour, reset=False)
+
+def clear_output_colour():
+    # Print nothing except the reset escape sequence
+    click.secho('', nl=False, reset=True)
+
+
 def print_filelist(header, filelist, colour=None):
+    set_output_colour(colour)
+
     click.echo(header)
 
     for line in sorted(filelist):
-        if colour:
-            line = click.style(line, fg=colour)
-
         click.echo("  {}".format(line))
+
+    clear_output_colour()
 
 
 def print_filelists(new_files, changed_files, missing_files):
