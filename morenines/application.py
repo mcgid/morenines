@@ -11,7 +11,7 @@ from morenines.output import warning, error, print_filelists
 _root_path_type = click.Path( exists=True, file_okay=False, dir_okay=True, resolve_path=True)
 
 _common_params = {
-    'index': click.option('--index', 'index_file', type=click.File(), required=True),
+    'index': click.argument('index_file', type=click.File(), required=True),
     'force': click.option('--force/--no-force', 'force', default=False),
     'root_path': click.argument('root_path', nargs=1, default=os.getcwd(), type=_root_path_type),
 }
@@ -46,12 +46,12 @@ def create(root_path):
 
 
 @main.command()
-@common_params('index', 'root_path')
+@common_params('index')
 @click.option('--remove/--no-remove', 'remove_missing', default=False)
-def update(root_path, index_file, remove_missing):
+def update(index_file, remove_missing):
     index = Index.read(index_file)
 
-    new_files, missing_files = get_new_and_missing(root_path, index)
+    new_files, missing_files = get_new_and_missing(index.headers['root_path'], index)
 
     index.add(new_files)
 
@@ -62,21 +62,21 @@ def update(root_path, index_file, remove_missing):
 
 
 @main.command()
-@common_params('index', 'root_path')
-def status(root_path, index_file):
+@common_params('index')
+def status(index_file):
     index = Index.read(index_file)
 
-    new_files, missing_files = get_new_and_missing(root_path, index)
+    new_files, missing_files = get_new_and_missing(index.headers['root_path'], index)
 
     print_filelists(new_files, None, missing_files)
 
 
 @main.command()
-@common_params('index', 'root_path')
-def verify(root_path, index_file):
+@common_params('index')
+def verify(index_file):
     index = Index.read(index_file)
 
-    new_files, missing_files = get_new_and_missing(root_path, index)
+    new_files, missing_files = get_new_and_missing(index.headers['root_path'], index)
 
     changed_files = []
 
@@ -84,7 +84,7 @@ def verify(root_path, index_file):
         if path in missing_files:
             continue
 
-        current_hash = get_hash(os.path.join(root_path, path))
+        current_hash = get_hash(os.path.join(index.headers['root_path'], path))
 
         if current_hash != old_hash:
             changed_files.append(path)
@@ -93,13 +93,13 @@ def verify(root_path, index_file):
 
 
 @main.command()
-@common_params('index', 'root_path', 'force')
-def push(root_path, index_file, force):
+@common_params('index', 'force')
+def push(index_file, force):
     index = Index.read(index_file)
     remotes = [FakeRemote(None)]
 
     # Check for new or missing files before pushing remotely
-    new_files, missing_files = get_new_and_missing(root_path, index)
+    new_files, missing_files = get_new_and_missing(index.headers['root_path'], index)
 
     if any([new_files, missing_files]):
         message = "Index file is out-of-date (there are new or missing files in the tree)"
