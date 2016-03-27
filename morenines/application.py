@@ -48,8 +48,12 @@ def create(root_path):
 @main.command()
 @common_params('index')
 @click.option('--remove/--no-remove', 'remove_missing', default=False)
-def update(index_file, remove_missing):
+@click.option('--new-root', 'new_root', type=_root_path_type)
+def update(index_file, remove_missing, new_root):
     index = Index.read(index_file)
+
+    if new_root:
+        index.headers['root_path'] = new_root
 
     new_files, missing_files = get_new_and_missing(index.headers['root_path'], index)
 
