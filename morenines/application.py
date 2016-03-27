@@ -12,8 +12,6 @@ _root_path_type = click.Path( exists=True, file_okay=False, dir_okay=True, resol
 
 _common_params = {
     'index': click.argument('index_file', type=click.File(), required=True),
-    'force': click.option('--force/--no-force', 'force', default=False),
-    'root_path': click.argument('root_path', nargs=1, default=os.getcwd(), type=_root_path_type),
 }
 
 
@@ -32,7 +30,7 @@ def main():
 
 
 @main.command()
-@common_params('root_path')
+@click.argument('root_path', required=True, default=os.getcwd(), type=_root_path_type)
 def create(root_path):
     index = Index()
 
@@ -97,7 +95,8 @@ def verify(index_file):
 
 
 @main.command()
-@common_params('index', 'force')
+@common_params('index')
+@click.option('--force/--no-force', 'force', default=False)
 def push(index_file, force):
     index = Index.read(index_file)
     remotes = [FakeRemote(None)]
