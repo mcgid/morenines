@@ -1,15 +1,13 @@
 import os
 import hashlib
 
-from fnmatch import fnmatchcase
-
 
 def get_files(index):
     paths = []
 
     for dirpath, dirnames, filenames in os.walk(index.headers['root_path']):
         # Remove ignored directories
-        dirnames = [d for d in dirnames if not index.ignores.match(d)]
+        dirnames[:] = [d for d in dirnames if not index.ignores.match(d)]
 
         for filename in (f for f in filenames if not index.ignores.match(f)):
             # We want the path of the file, not its name
