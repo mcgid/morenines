@@ -2,14 +2,18 @@ import os
 import hashlib
 
 
-def get_files(index):
+def get_files(index, ignores=None):
     paths = []
 
     for dirpath, dirnames, filenames in os.walk(index.headers['root_path']):
-        # Remove ignored directories
-        dirnames[:] = [d for d in dirnames if not index.ignores.match(d)]
+        if ignores:
+            # Remove ignored directories
+            dirnames[:] = [d for d in dirnames if not ignores.match(d)]
 
-        for filename in (f for f in filenames if not index.ignores.match(f)):
+        for filename in filenames:
+            if ignores and ignores.match(filename):
+                continue
+
             # We want the path of the file, not its name
             path = os.path.join(dirpath, filename)
 

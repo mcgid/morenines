@@ -32,6 +32,7 @@ def main():
 
 
 @main.command()
+# We make ignores a resloved Path and not a File because we need to save the abspath in the index
 @click.option('--ignores-file', 'ignores_path', type=_ignores_path_type)
 @click.argument('root_path', required=True, default=os.getcwd(), type=_root_path_type)
 def create(ignores_path, root_path):
@@ -39,13 +40,15 @@ def create(ignores_path, root_path):
 
     index.headers['root_path'] = root_path
 
+    ignores = None
+
     if ignores_path:
         index.headers['ignores_file'] = ignores_path
 
         with open(ignores_path, 'r') as f:
-            index.ignores = Ignores.read(f)
+            ignores = Ignores.read(f)
 
-    files = get_files(index)
+    files = get_files(index, ignores)
 
     index.add(files)
 
