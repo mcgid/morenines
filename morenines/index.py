@@ -9,33 +9,27 @@ from morenines.util import get_hash
 class Index(object):
     version = 1
 
-    @classmethod
-    def read(cls, stream):
-        index = cls()
-
-        index.headers = parse_headers(stream)
-
-        if 'version' not in index.headers:
-            raise Exception("Invalid file format: no version header")
-
-        if index.headers['version'] != str(cls.version):
-            raise Exception("Unsupported file format version: file is {}, parser is {}".format(index.headers['version'], cls.version))
-
-        if 'ignores_file' in index.headers:
-            with open(index.headers['ignores_file'], 'r') as f:
-                index.ignores = Ignores.read(f)
-
-        index.files = parse_files(stream)
-
-        return index
-
-    def __init__(self):
+    def __init__(self, stream=None):
         self.headers = collections.OrderedDict()
         self.files = collections.OrderedDict()
         self.ignores = Ignores()
 
-        # Default to version in class; if reading file, this will get overwritten
-        self.headers['version'] = Index.version
+        if stream:
+            self.headers = parse_headers(stream)
+
+            if 'version' not in self.headers:
+                raise Exception("Invalid file format: no version header")
+
+            if self.headers['version'] != str(self.version):
+                raise Exception("Unsupported file format version: file is {}, parser is {}".format(self.headers['version'], self.version))
+
+            if 'ignores_file' in self.headers:
+                with open(self.headers['ignores_file'], 'r') as f:
+                    self.ignores = Ignores.read(f)
+
+            self.files = parse_files(stream)
+        else:
+            self.headers['version'] = Index.version
 
     def add(self, paths):
         for path in paths:

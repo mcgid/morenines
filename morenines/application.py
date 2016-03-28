@@ -57,7 +57,7 @@ def create(ignores_path, root_path):
 @click.option('--remove/--no-remove', 'remove_missing', default=False)
 @click.option('--new-root', 'new_root', type=_root_path_type)
 def update(index_file, remove_missing, new_root):
-    index = Index.read(index_file)
+    index = Index(index_file)
 
     if new_root:
         index.headers['root_path'] = new_root
@@ -75,7 +75,7 @@ def update(index_file, remove_missing, new_root):
 @main.command()
 @common_params('index')
 def status(index_file):
-    index = Index.read(index_file)
+    index = Index(index_file)
 
     new_files, missing_files = get_new_and_missing(index)
 
@@ -85,7 +85,7 @@ def status(index_file):
 @main.command()
 @common_params('index')
 def verify(index_file):
-    index = Index.read(index_file)
+    index = Index(index_file)
 
     new_files, missing_files = get_new_and_missing(index)
 
@@ -107,7 +107,7 @@ def verify(index_file):
 @common_params('index')
 @click.option('--force/--no-force', 'force', default=False)
 def push(index_file, force):
-    index = Index.read(index_file)
+    index = Index(index_file)
     remotes = [FakeRemote(None)]
 
     # Check for new or missing files before pushing remotely
