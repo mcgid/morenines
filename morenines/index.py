@@ -22,7 +22,8 @@ class Index(object):
             raise Exception("Unsupported file format version: file is {}, parser is {}".format(index.headers['version'], cls.version))
 
         if 'ignores_file' in index.headers:
-            index.ignores = Ignores.read(index.headers['ignores_file'])
+            with open(index.headers['ignores_file'], 'r') as f:
+                index.ignores = Ignores.read(f)
         else:
             index.ignores = Ignores()
 

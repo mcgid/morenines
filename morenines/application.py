@@ -42,7 +42,8 @@ def create(ignores_path, root_path):
     if ignores_path:
         index.headers['ignores_file'] = ignores_path
 
-        index.ignores = Ignores.read(ignores_path)
+        with open(ignores_path, 'r') as f:
+            index.ignores = Ignores.read(f)
 
     files = get_files(index)
 
