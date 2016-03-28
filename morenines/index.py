@@ -24,8 +24,6 @@ class Index(object):
         if 'ignores_file' in index.headers:
             with open(index.headers['ignores_file'], 'r') as f:
                 index.ignores = Ignores.read(f)
-        else:
-            index.ignores = Ignores()
 
         index.files = parse_files(stream)
 
@@ -34,6 +32,7 @@ class Index(object):
     def __init__(self):
         self.headers = collections.OrderedDict()
         self.files = collections.OrderedDict()
+        self.ignores = Ignores()
 
         # Default to version in class; if reading file, this will get overwritten
         self.headers['version'] = Index.version
