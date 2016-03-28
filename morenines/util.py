@@ -1,6 +1,8 @@
 import os
 import hashlib
 
+from morenines.ignores import Ignores
+
 
 def get_files(index, ignores=None):
     paths = []
@@ -41,11 +43,22 @@ def get_hash(path):
     return h.hexdigest()
 
 
-def get_new_and_missing(index):
-    current_files = get_files(index)
+def get_new_and_missing(index, include_ignored=False):
+    ignores = None
+
+    if not include_ignored and 'ignores_file' in index.headers:
+        with open(index.headers['ignores_file'], 'r') as f:
+            ignores = Ignores.read(f)
+
+    current_files = get_files(index, ignores)
 
     new_files = [path for path in current_files if path not in index.files]
 
     missing_files = [path for path in index.files.iterkeys() if path not in current_files]
 
-    return new_files, missing_files
+    if ignores:
+        ignored_files = [path for path in new_files if not ignores.match(path)]
+    else:
+        ignored_files = []
+
+    return new_files, missing_files, ignored_files

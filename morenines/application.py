@@ -65,7 +65,7 @@ def update(index_file, remove_missing, new_root):
     if new_root:
         index.headers['root_path'] = new_root
 
-    new_files, missing_files = get_new_and_missing(index)
+    new_files, missing_files, ignored_files = get_new_and_missing(index)
 
     index.add(new_files)
 
@@ -80,7 +80,7 @@ def update(index_file, remove_missing, new_root):
 def status(index_file):
     index = Index(index_file)
 
-    new_files, missing_files = get_new_and_missing(index)
+    new_files, missing_files, ignored_files = get_new_and_missing(index)
 
     print_filelists(new_files, None, missing_files)
 
@@ -90,7 +90,7 @@ def status(index_file):
 def verify(index_file):
     index = Index(index_file)
 
-    new_files, missing_files = get_new_and_missing(index)
+    new_files, missing_files, ignored_files = get_new_and_missing(index)
 
     changed_files = []
 
@@ -114,7 +114,7 @@ def push(index_file, force):
     remotes = [FakeRemote(None)]
 
     # Check for new or missing files before pushing remotely
-    new_files, missing_files = get_new_and_missing(index)
+    new_files, missing_files, ignored_files = get_new_and_missing(index)
 
     if any([new_files, missing_files]):
         message = "Index file is out-of-date (there are new or missing files in the tree)"
