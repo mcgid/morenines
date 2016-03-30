@@ -5,7 +5,7 @@ import sys
 from morenines.index import Index
 from morenines.ignores import Ignores
 from morenines.remote import FakeRemote
-from morenines.util import get_files, get_hash, get_new_and_missing
+from morenines.util import get_files, get_ignores, get_hash, get_new_and_missing
 from morenines.output import warning, error, print_filelists
 
 # Defining this on its own makes the _common_params definition a little cleaner and nicer
@@ -41,15 +41,9 @@ def create(ignores_path, root_path):
 
     index.headers['root_path'] = root_path
 
-    ignores = None
+    ignores = get_ignores(ignores_path)
 
-    if ignores_path:
-        index.headers['ignores_file'] = ignores_path
-
-        with open(ignores_path, 'r') as f:
-            ignores = Ignores.read(f)
-
-    files = get_files(index, ignores)
+    files, ignored = get_files(index.headers['root_path'], ignores)
 
     index.add(files)
 
@@ -63,10 +57,12 @@ def create(ignores_path, root_path):
 def update(index_file, remove_missing, new_root):
     index = Index(index_file)
 
+    ignores = get_ignores(index.headers['ignores_file'])
+
     if new_root:
         index.headers['root_path'] = new_root
 
-    new_files, missing_files, ignored_files = get_new_and_missing(index)
+    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores)
 
     index.add(new_files)
 
@@ -81,7 +77,9 @@ def update(index_file, remove_missing, new_root):
 def status(index_file, include_ignored):
     index = Index(index_file)
 
-    new_files, missing_files, ignored_files = get_new_and_missing(index, include_ignored)
+    ignores = get_ignores(index.headers['ignores_file'])
+
+    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, include_ignored)
 
     print_filelists(new_files, None, missing_files)
 
@@ -91,7 +89,9 @@ def status(index_file, include_ignored):
 def verify(index_file, include_ignored):
     index = Index(index_file)
 
-    new_files, missing_files, ignored_files = get_new_and_missing(index, include_ignored)
+    ignores = get_ignores(index.headers['ignores_file'])
+
+    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, include_ignored)
 
     changed_files = []
 
@@ -114,8 +114,10 @@ def push(index_file, force):
     index = Index(index_file)
     remotes = [FakeRemote(None)]
 
+    ignores = get_ignores(index.headers['ignores_file'])
+
     # Check for new or missing files before pushing remotely
-    new_files, missing_files, ignored_files = get_new_and_missing(index)
+    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores)
 
     if any([new_files, missing_files]):
         message = "Index file is out-of-date (there are new or missing files in the tree)"
