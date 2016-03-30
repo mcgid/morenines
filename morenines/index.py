@@ -6,7 +6,7 @@ from morenines.util import get_hash
 
 
 class Index(object):
-    version = 1
+    reader_version = 1
 
     def __init__(self, stream=None):
         self.headers = collections.OrderedDict()
@@ -18,12 +18,12 @@ class Index(object):
             if 'version' not in self.headers:
                 raise Exception("Invalid file format: no version header")
 
-            if self.headers['version'] != str(self.version):
-                raise Exception("Unsupported file format version: file is {}, parser is {}".format(self.headers['version'], self.version))
+            if self.headers['version'] != str(self.reader_version):
+                raise Exception("Unsupported file format version: file is {}, parser is {}".format(self.headers['version'], self.reader_version))
 
             self.files = parse_files(stream)
         else:
-            self.headers['version'] = Index.version
+            self.headers['version'] = self.reader_version
 
     def add(self, paths):
         for path in paths:
