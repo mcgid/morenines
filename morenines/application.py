@@ -81,7 +81,7 @@ def status(index_file, include_ignored):
 
     new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, include_ignored)
 
-    print_filelists(new_files, None, missing_files)
+    print_filelists(new_files, None, missing_files, ignored_files)
 
 
 @main.command()
@@ -104,7 +104,7 @@ def verify(index_file, include_ignored):
         if current_hash != old_hash:
             changed_files.append(path)
 
-    print_filelists(new_files, changed_files, missing_files)
+    print_filelists(new_files, changed_files, missing_files, ignored_files)
 
 
 @main.command()

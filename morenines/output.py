@@ -4,6 +4,7 @@ import sys
 GOOD_COLOUR = 'green'
 WARN_COLOUR = 'yellow'
 BAD_COLOUR = 'red'
+IGNORED_COLOUR = 'blue'
 
 def set_output_colour(colour):
     # Print nothing except the ANSI escape sequence
@@ -35,9 +36,8 @@ def error(message, items=[]):
     output("ERROR: " + message, BAD_COLOUR, items)
     sys.exit(1)
 
-
-def print_filelists(new_files, changed_files, missing_files):
-    if not any([new_files, changed_files, missing_files]):
+def print_filelists(new_files, changed_files, missing_files, ignored_files):
+    if not any([new_files, changed_files, missing_files, ignored_files]):
         output("Index is up-to-date (no changes)", GOOD_COLOUR)
         return
 
@@ -45,15 +45,22 @@ def print_filelists(new_files, changed_files, missing_files):
         output("New files (not in index):", WARN_COLOUR, new_files)
 
         # Print a blank space between sections
-        if missing_files or changed_files:
+        if missing_files or changed_files or ignored_files:
             click.echo()
 
     if missing_files:
         output("Missing files:", WARN_COLOUR, missing_files)
 
         # Print a blank space between sections
-        if changed_files:
+        if changed_files or ignored_files:
             click.echo()
 
     if changed_files:
         output("Changed files (hash differs from index):", BAD_COLOUR, changed_files)
+
+        # Print a blank space between sections
+        if ignored_files:
+            click.echo()
+
+    if ignored_files:
+        output("Ignored files and directories:", IGNORED_COLOUR, ignored_files)
