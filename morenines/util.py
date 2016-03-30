@@ -9,19 +9,18 @@ def get_files(root_path, ignores, save_ignored_paths=False):
     ignored = []
 
     for dirpath, dirnames, filenames in os.walk(root_path):
-        # If we aren't saving ignored paths, we can prune the tree as we walk
-        if not save_ignored_paths:
-            # Prune ignored subdirs of current dir in-place
-            dirnames[:] = [d for d in dirnames if not ignores.match(d)]
+        ignored_dirs = [d for d in dirnames if ignores.match(d)]
 
-        for filename in filenames:
-            # We want the path of the file, not its name
-            path = os.path.join(dirpath, filename)
+        # Only walk ignored dirs if we're saving all ignored paths
+        if save_ignored_paths:
+            # Directories end in a slash
+            ignored.extend([path + '/' for path in rel_paths_iter(ignored_dirs, dirpath, root_path)])
 
-            # That path must be relative to the root, not absolute
-            path = os.path.relpath(path, root_path)
+        # Prune ignored subdirs of current dir in-place
+        dirnames[:] = [d for d in dirnames if d not in ignored_dirs]
 
-            if ignores.match(filename):
+        for path in rel_paths_iter(filenames, dirpath, root_path):
+            if ignores.match(path):
                 if save_ignored_paths:
                     ignored.append(path)
                 continue
@@ -29,6 +28,17 @@ def get_files(root_path, ignores, save_ignored_paths=False):
                 paths.append(path)
 
     return paths, ignored
+
+
+def rel_paths_iter(names, parent_dir_path, root_path):
+    for name in names:
+        # We want the full path of the file/dir, not its name
+        path = os.path.join(parent_dir_path, name)
+
+        # That path must be relative to the root, not absolute
+        path = os.path.relpath(path, root_path)
+
+        yield path
 
 
 def get_ignores(ignores_path=None):
