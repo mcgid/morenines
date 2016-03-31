@@ -56,8 +56,10 @@ class Index(object):
             ('version', self.reader_version),
             ('root_path', self.root_path),
             ('date', datetime.datetime.utcnow().isoformat()),
-            ('ignores_file', self.ignores_file),
         ]
+
+        if self.ignores_file:
+            headers.append(('ignores_file', self.ignores_file))
 
         for key, value in headers:
             stream.write("{}: {}\n".format(key, value))
