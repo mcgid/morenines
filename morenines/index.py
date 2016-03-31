@@ -8,27 +8,41 @@ from morenines.util import get_hash
 class Index(object):
     reader_version = 1
 
-    def __init__(self, stream=None):
-        self.headers = collections.OrderedDict()
+    @classmethod
+    def _check_version(cls, headers):
+        try:
+            version = headers['version']
+        except KeyError as e:
+            missing_key = e.args[0]
+            raise Exception("Invalid file format: missing required header '{}'".format(missing_key))
+
+        if version != str(cls.reader_version):
+            raise Exception("Unsupported file format version: file is {}, parser is {}".format(version, cls.reader_version))
+
+    @classmethod
+    def read(cls, stream):
+        headers = parse_headers(stream)
+
+        cls._check_version(headers)
+
+        index = cls(headers['root_path'])
+
+        if 'ignores_file' in headers:
+            index.ignores_file = headers['ignores_file']
+
+        index.files = parse_files(stream)
+
+        return index
+
+    def __init__(self, root_path, ignores_file=None):
+        self.root_path = root_path
+        self.ignores_file = ignores_file
         self.files = collections.OrderedDict()
-
-        if stream:
-            self.headers = parse_headers(stream)
-
-            if 'version' not in self.headers:
-                raise Exception("Invalid file format: no version header")
-
-            if self.headers['version'] != str(self.reader_version):
-                raise Exception("Unsupported file format version: file is {}, parser is {}".format(self.headers['version'], self.reader_version))
-
-            self.files = parse_files(stream)
-        else:
-            self.headers['version'] = self.reader_version
 
     def add(self, paths):
         for path in paths:
             # To hash the file, we need its absolute path
-            abs_path = os.path.join(self.headers['root_path'], path)
+            abs_path = os.path.join(self.root_path, path)
 
             # We store the relative path in the index, not the absolute
             self.files[path] = get_hash(abs_path)
@@ -38,12 +52,15 @@ class Index(object):
             del self.files[path]
 
     def write(self, stream):
-        # The date header is the moment the index is written to disk
-        self.headers['date'] = datetime.datetime.utcnow().isoformat()
+        headers = [
+            ('version', self.reader_version),
+            ('root_path', self.root_path),
+            ('date', datetime.datetime.utcnow().isoformat()),
+            ('ignores_file', self.ignores_file),
+        ]
 
-        # Write headers -- but sort the keys before writing
-        for key in sorted(self.headers):
-            stream.write("{}: {}\n".format(key, self.headers[key]))
+        for key, value in headers:
+            stream.write("{}: {}\n".format(key, value))
 
         # Separate the headers from the files list with a blank line
         stream.write("\n")

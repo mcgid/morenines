@@ -61,7 +61,7 @@ def get_hash(path):
 
 
 def get_new_and_missing(index, ignores, include_ignored=False):
-    current_files, ignored_files = get_files(index.headers['root_path'], ignores, include_ignored)
+    current_files, ignored_files = get_files(index.root_path, ignores, include_ignored)
 
     new_files = [path for path in current_files if path not in index.files]
 

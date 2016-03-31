@@ -37,13 +37,11 @@ def main():
 @click.option('--ignores-file', 'ignores_path', type=_ignores_path_type)
 @click.argument('root_path', required=True, default=os.getcwd(), type=_root_path_type)
 def create(ignores_path, root_path):
-    index = Index()
-
-    index.headers['root_path'] = root_path
+    index = Index(root_path, ignores_path)
 
     ignores = get_ignores(ignores_path)
 
-    files, ignored = get_files(index.headers['root_path'], ignores)
+    files, ignored = get_files(index.root_path, ignores)
 
     index.add(files)
 
@@ -55,12 +53,12 @@ def create(ignores_path, root_path):
 @click.option('--remove/--no-remove', 'remove_missing', default=False)
 @click.option('--new-root', 'new_root', type=_root_path_type)
 def update(index_file, remove_missing, new_root):
-    index = Index(index_file)
+    index = Index.read(index_file)
 
-    ignores = get_ignores(index.headers['ignores_file'])
+    ignores = get_ignores(index.ignores_file)
 
     if new_root:
-        index.headers['root_path'] = new_root
+        index.root_path = new_root
 
     new_files, missing_files, ignored_files = get_new_and_missing(index, ignores)
 
@@ -75,9 +73,9 @@ def update(index_file, remove_missing, new_root):
 @main.command()
 @common_params('index', 'ignored')
 def status(index_file, include_ignored):
-    index = Index(index_file)
+    index = Index.read(index_file)
 
-    ignores = get_ignores(index.headers['ignores_file'])
+    ignores = get_ignores(index.ignores_file)
 
     new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, include_ignored)
 
@@ -87,9 +85,9 @@ def status(index_file, include_ignored):
 @main.command()
 @common_params('index', 'ignored')
 def verify(index_file, include_ignored):
-    index = Index(index_file)
+    index = Index.read(index_file)
 
-    ignores = get_ignores(index.headers['ignores_file'])
+    ignores = get_ignores(index.ignores_file)
 
     new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, include_ignored)
 
@@ -99,7 +97,7 @@ def verify(index_file, include_ignored):
         if path in missing_files:
             continue
 
-        current_hash = get_hash(os.path.join(index.headers['root_path'], path))
+        current_hash = get_hash(os.path.join(index.root_path, path))
 
         if current_hash != old_hash:
             changed_files.append(path)
@@ -111,10 +109,10 @@ def verify(index_file, include_ignored):
 @common_params('index')
 @click.option('--force/--no-force', 'force', default=False)
 def push(index_file, force):
-    index = Index(index_file)
+    index = Index.read(index_file)
     remotes = [FakeRemote(None)]
 
-    ignores = get_ignores(index.headers['ignores_file'])
+    ignores = get_ignores(index.ignores_file)
 
     # Check for new or missing files before pushing remotely
     new_files, missing_files, ignored_files = get_new_and_missing(index, ignores)
