@@ -35,7 +35,7 @@ def find_file(name, starting_dir=os.getcwd()):
         return path
 
     if starting_dir == '/':
-        raise Exception("Cannot find file '{}' inside or in any parent of '{}'".format(name, starting_dir))
+        return None
 
     # Remove the last dir in path and call recursively, to look in parent dir
     return find_file(name, os.path.split(starting_dir)[0])
