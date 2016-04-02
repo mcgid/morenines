@@ -1,5 +1,4 @@
 import click
-import sys
 
 GOOD_COLOR = 'green'
 WARN_COLOR = 'yellow'
@@ -34,7 +33,6 @@ def warning(message, items=[]):
 
 def error(message, items=[]):
     output("ERROR: " + message, BAD_COLOR, items)
-    sys.exit(1)
 
 def print_filelists(new_files, changed_files, missing_files, ignored_files):
     if not any([new_files, changed_files, missing_files, ignored_files]):

@@ -125,6 +125,7 @@ def push(index_file, force):
             warning(message + "\n" + "Pushing anyway because --force was used")
         else:
             error(message + "\n" + "(Use --force option to push anyway)")
+            sys.exit(1)
 
     for remote in remotes:
         remote_blobs = remote.get_blob_list()
