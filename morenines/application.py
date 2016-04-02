@@ -8,9 +8,12 @@ from morenines.remote import FakeRemote
 from morenines.util import get_files, get_ignores, get_hash, get_new_and_missing
 from morenines.output import warning, error, print_filelists
 
-# Defining this on its own makes the _common_params definition a little cleaner and nicer
-_root_path_type = click.Path( exists=True, file_okay=False, dir_okay=True, resolve_path=True)
-_ignores_path_type = click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True)
+_path_type = {
+    'file':click.Path(file_okay=True, dir_okay=False, resolve_path=True),
+    'existing file':click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+    'new file':click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True),
+    'existing dir':click.Path(exists=True, file_okay=False, dir_okay=True, resolve_path=True),
+}
 
 _common_params = {
     'index': click.argument('index_file', type=click.File(), required=True),
@@ -33,9 +36,8 @@ def main():
 
 
 @main.command()
-# We make ignores a resloved Path and not a File because we need to save the abspath in the index
-@click.option('--ignores-file', 'ignores_path', type=_ignores_path_type)
-@click.argument('root_path', required=True, default=os.getcwd(), type=_root_path_type)
+@click.option('--ignores-file', 'ignores_path', type=_path_type['existing file'])
+@click.argument('root_path', required=True, default=os.getcwd(), type=_path_type['existing dir'])
 def create(ignores_path, root_path):
     index = Index(root_path, ignores_path)
 
@@ -51,7 +53,7 @@ def create(ignores_path, root_path):
 @main.command()
 @common_params('index')
 @click.option('--remove/--no-remove', 'remove_missing', default=False)
-@click.option('--new-root', 'new_root', type=_root_path_type)
+@click.option('--new-root', 'new_root', type=_path_type['existing dir'])
 def update(index_file, remove_missing, new_root):
     index = Index.read(index_file)
 
