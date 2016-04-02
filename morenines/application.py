@@ -6,7 +6,7 @@ from morenines.index import Index
 from morenines.ignores import Ignores
 from morenines.remote import FakeRemote
 from morenines.util import get_files, get_hash, get_new_and_missing
-from morenines.output import warning, error, print_filelists
+from morenines.output import success, warning, error, print_filelists
 
 _path_type = {
     'file':click.Path(file_okay=True, dir_okay=False, resolve_path=True),
@@ -55,6 +55,8 @@ def create(ignores_path, root_path, output_path):
 
     with click.open_file(output_path, mode='w') as stream:
         index.write(stream)
+
+    success('Wrote index file {}'.format(output_path))
 
 
 @main.command()
