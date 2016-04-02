@@ -3,7 +3,7 @@ import collections
 import datetime
 import click
 
-from morenines.util import get_hash
+from morenines.util import get_hash, find_file
 
 
 class Index(object):
@@ -22,6 +22,9 @@ class Index(object):
 
     @classmethod
     def read(cls, path):
+        if not path:
+            path = find_file('.mnindex')
+
         with click.open_file(path, 'r') as stream:
             headers = parse_headers(stream)
 

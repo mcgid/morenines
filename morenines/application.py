@@ -16,7 +16,7 @@ _path_type = {
 }
 
 _common_params = {
-    'index': click.argument('index_file', type=_path_type['existing file']),
+    'index': click.argument('index_file', required=False, type=_path_type['file']),
     'ignored': click.option('--ignored/--no-ignored', 'include_ignored', default=False),
 }
 
