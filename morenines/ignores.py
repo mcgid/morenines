@@ -2,9 +2,15 @@ import os
 from fnmatch import fnmatchcase
 import click
 
+from morenines.util import find_file
+
+
 class Ignores(object):
     @classmethod
     def read(cls, path):
+        if not path:
+            path = find_file('.mnignore')
+
         ignores = cls()
 
         if path:
