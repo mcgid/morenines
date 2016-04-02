@@ -37,8 +37,14 @@ def main():
 
 @main.command()
 @click.option('--ignores-file', 'ignores_path', type=_path_type['existing file'])
+@click.option('-o', '--output', 'output_path', default=os.path.join(os.getcwd(), '.mnindex'), type=_path_type['new file'])
 @click.argument('root_path', required=True, default=os.getcwd(), type=_path_type['existing dir'])
-def create(ignores_path, root_path):
+def create(ignores_path, root_path, output_path):
+    if os.path.exists(output_path):
+        error("Index file {} already exists".format(output_path))
+        error("(To update an existing index file, use the 'update' command)")
+        sys.exit(1)
+
     index = Index(root_path, ignores_path)
 
     ignores = Ignores.read(ignores_path)
@@ -47,7 +53,8 @@ def create(ignores_path, root_path):
 
     index.add(files)
 
-    index.write(sys.stdout)
+    with click.open_file(output_path, mode='w') as stream:
+        index.write(stream)
 
 
 @main.command()
