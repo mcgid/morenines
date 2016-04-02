@@ -64,7 +64,7 @@ def create(ignores_path, root_path, output_path):
 
 @main.command()
 @common_params('index')
-@click.option('--remove/--no-remove', 'remove_missing', default=False)
+@click.option('--remove-missing/--no-remove-missing', default=False)
 @click.option('--new-root', 'new_root', type=_path_type['existing dir'])
 def update(index_file, remove_missing, new_root):
     index = Index.read(index_file)
