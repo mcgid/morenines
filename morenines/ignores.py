@@ -7,9 +7,11 @@ from morenines.util import find_file
 
 class Ignores(object):
     @classmethod
-    def read(cls, path):
+    def read(cls, path, root_path):
         if not path:
-            path = find_file('.mnignore')
+            default = os.path.join(root_path, '.mnignore')
+            if os.path.isfile(default):
+                path = default
 
         ignores = cls()
 
