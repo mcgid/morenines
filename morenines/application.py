@@ -45,6 +45,9 @@ def create(ignores_path, root_path, output_path):
         error("(To update an existing index file, use the 'update' command)")
         sys.exit(1)
 
+    if os.path.basename(output_path) == '-':
+        output_path = '-'
+
     index = Index(root_path, ignores_path)
 
     ignores = Ignores.read(ignores_path, root_path)
