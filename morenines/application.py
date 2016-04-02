@@ -5,7 +5,7 @@ import sys
 from morenines.index import Index
 from morenines.ignores import Ignores
 from morenines.remote import FakeRemote
-from morenines.util import get_files, get_ignores, get_hash, get_new_and_missing
+from morenines.util import get_files, get_hash, get_new_and_missing
 from morenines.output import warning, error, print_filelists
 
 _path_type = {

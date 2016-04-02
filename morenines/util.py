@@ -1,8 +1,6 @@
 import os
 import hashlib
 
-from morenines.ignores import Ignores
-
 
 def get_files(root_path, ignores, save_ignored_paths=False):
     paths = []
@@ -52,16 +50,6 @@ def rel_paths_iter(names, parent_dir_path, root_path):
         path = os.path.relpath(path, root_path)
 
         yield path
-
-
-def get_ignores(ignores_path=None):
-    if not ignores_path:
-        return Ignores()
-
-    with open(ignores_path, 'r') as ignores_path:
-        ignores = Ignores.read(ignores_path)
-
-    return ignores
 
 
 def get_hash(path):
