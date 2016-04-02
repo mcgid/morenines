@@ -1,13 +1,15 @@
 import os
 from fnmatch import fnmatchcase
+import click
 
 class Ignores(object):
     @classmethod
-    def read(cls, stream):
+    def read(cls, path):
         ignores = cls()
 
-        for line in stream:
-            ignores.patterns.append(line.strip())
+        if path:
+            with click.open_file(path, 'r') as stream:
+                ignores.patterns = [line.strip() for line in stream]
 
         return ignores
     

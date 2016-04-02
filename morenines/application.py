@@ -41,7 +41,7 @@ def main():
 def create(ignores_path, root_path):
     index = Index(root_path, ignores_path)
 
-    ignores = get_ignores(ignores_path)
+    ignores = Ignores.read(ignores_path)
 
     files, ignored = get_files(index.root_path, ignores)
 
@@ -57,7 +57,7 @@ def create(ignores_path, root_path):
 def update(index_file, remove_missing, new_root):
     index = Index.read(index_file)
 
-    ignores = get_ignores(index.ignores_file)
+    ignores = Ignores.read(index.ignores_file)
 
     if new_root:
         index.root_path = new_root
@@ -77,7 +77,7 @@ def update(index_file, remove_missing, new_root):
 def status(index_file, include_ignored):
     index = Index.read(index_file)
 
-    ignores = get_ignores(index.ignores_file)
+    ignores = Ignores.read(index.ignores_file)
 
     new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, include_ignored)
 
@@ -89,7 +89,7 @@ def status(index_file, include_ignored):
 def verify(index_file, include_ignored):
     index = Index.read(index_file)
 
-    ignores = get_ignores(index.ignores_file)
+    ignores = Ignores.read(index.ignores_file)
 
     new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, include_ignored)
 
@@ -114,7 +114,7 @@ def push(index_file, force):
     index = Index.read(index_file)
     remotes = [FakeRemote(None)]
 
-    ignores = get_ignores(index.ignores_file)
+    ignores = Ignores.read(index.ignores_file)
 
     # Check for new or missing files before pushing remotely
     new_files, missing_files, ignored_files = get_new_and_missing(index, ignores)
