@@ -30,6 +30,19 @@ def get_files(root_path, ignores, save_ignored_paths=False):
     return paths, ignored
 
 
+def find_file(name, starting_dir=os.getcwd()):
+    path = os.path.join(starting_dir, name)
+
+    if os.path.isfile(path):
+        return path
+
+    if starting_dir == '/':
+        raise Exception("Cannot find file '{}' inside or in any parent of '{}'".format(name, starting_dir))
+
+    # Remove the last dir in path and call recursively, to look in parent dir
+    return find_file(name, os.path.split(starting_dir)[0])
+
+
 def rel_paths_iter(names, parent_dir_path, root_path):
     for name in names:
         # We want the full path of the file/dir, not its name
