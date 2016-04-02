@@ -1,6 +1,7 @@
 import os
 import collections
 import datetime
+import click
 
 from morenines.util import get_hash
 
@@ -20,19 +21,20 @@ class Index(object):
             raise Exception("Unsupported file format version: file is {}, parser is {}".format(version, cls.reader_version))
 
     @classmethod
-    def read(cls, stream):
-        headers = parse_headers(stream)
+    def read(cls, path):
+        with click.open_file(path, 'r') as stream:
+            headers = parse_headers(stream)
 
-        cls._check_version(headers)
+            cls._check_version(headers)
 
-        index = cls(headers['root_path'])
+            index = cls(headers['root_path'])
 
-        if 'ignores_file' in headers:
-            index.ignores_file = headers['ignores_file']
+            if 'ignores_file' in headers:
+                index.ignores_file = headers['ignores_file']
 
-        index.files = parse_files(stream)
+            index.files = parse_files(stream)
 
-        return index
+            return index
 
     def __init__(self, root_path, ignores_file=None):
         self.root_path = root_path
