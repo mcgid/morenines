@@ -1,66 +1,66 @@
 import click
 import sys
 
-GOOD_COLOUR = 'green'
-WARN_COLOUR = 'yellow'
-BAD_COLOUR = 'red'
-IGNORED_COLOUR = 'blue'
+GOOD_COLOR = 'green'
+WARN_COLOR = 'yellow'
+BAD_COLOR = 'red'
+IGNORED_COLOR = 'blue'
 
-def set_output_colour(colour):
+def set_output_color(color):
     # Print nothing except the ANSI escape sequence
-    click.secho('', nl=False, fg=colour, reset=False)
+    click.secho('', nl=False, fg=color, reset=False)
 
 
-def clear_output_colour():
+def clear_output_color():
     # Print nothing except the reset escape sequence
     click.secho('', nl=False, reset=True)
 
 
-def output(message, colour=None, items=[]):
-    if colour:
-        set_output_colour(colour)
+def output(message, color=None, items=[]):
+    if color:
+        set_output_color(color)
 
     click.echo(message)
 
     for item in sorted(items):
         click.echo("  " + item)
 
-    clear_output_colour()
+    clear_output_color()
 
 
 def warning(message, items=[]):
-    output("WARNING: " + message, WARN_COLOUR, items)
+    output("WARNING: " + message, WARN_COLOR, items)
 
 
 def error(message, items=[]):
-    output("ERROR: " + message, BAD_COLOUR, items)
+    output("ERROR: " + message, BAD_COLOR, items)
     sys.exit(1)
 
 def print_filelists(new_files, changed_files, missing_files, ignored_files):
     if not any([new_files, changed_files, missing_files, ignored_files]):
-        output("Index is up-to-date (no changes)", GOOD_COLOUR)
+        output("Index is up-to-date (no changes)", GOOD_COLOR)
         return
 
     if new_files:
-        output("New files (not in index):", WARN_COLOUR, new_files)
+        output("New files (not in index):", WARN_COLOR, new_files)
 
         # Print a blank space between sections
         if missing_files or changed_files or ignored_files:
             click.echo()
 
     if missing_files:
-        output("Missing files:", WARN_COLOUR, missing_files)
+        output("Missing files:", WARN_COLOR, missing_files)
 
         # Print a blank space between sections
         if changed_files or ignored_files:
             click.echo()
 
     if changed_files:
-        output("Changed files (hash differs from index):", BAD_COLOUR, changed_files)
+        output("Changed files (hash differs from index):", BAD_COLOR, changed_files)
 
         # Print a blank space between sections
         if ignored_files:
             click.echo()
 
     if ignored_files:
-        output("Ignored files and directories:", IGNORED_COLOUR, ignored_files)
+        output("Ignored files and directories:", IGNORED_COLOR, ignored_files)
