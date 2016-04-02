@@ -17,7 +17,7 @@ _path_type = {
 
 _common_params = {
     'index': click.argument('index_file', required=False, type=_path_type['file']),
-    'ignored': click.option('-i', '--ignored/--no-ignored', 'include_ignored', default=False),
+    'ignored': click.option('-i', '--ignored/--no-ignored', 'show_ignored', default=False),
 }
 
 
@@ -86,24 +86,24 @@ def update(index_file, remove_missing, new_root):
 
 @main.command()
 @common_params('index', 'ignored')
-def status(index_file, include_ignored):
+def status(index_file, show_ignored):
     index = Index.read(index_file)
 
     ignores = Ignores.read(index.ignores_file, index.root_path)
 
-    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, include_ignored)
+    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, show_ignored)
 
     print_filelists(new_files, None, missing_files, ignored_files)
 
 
 @main.command()
 @common_params('index', 'ignored')
-def verify(index_file, include_ignored):
+def verify(index_file, show_ignored):
     index = Index.read(index_file)
 
     ignores = Ignores.read(index.ignores_file, index.root_path)
 
-    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, include_ignored)
+    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, show_ignored)
 
     changed_files = []
 
