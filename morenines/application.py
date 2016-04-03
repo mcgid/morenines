@@ -29,6 +29,55 @@ def common_params(*param_names):
     return real_decorator
 
 
+class MNContext(object):
+    def __init__(self, index, ignores):
+        self.index = index
+        self.ignores = ignores
+
+
+def get_index(index_path):
+    if not index_path:
+        index_path = find_file('.mnindex')
+
+    if index_path:
+        index = Index.read(index_path)
+    else:
+        index = None
+
+    return index
+
+
+def get_ignores(index):
+    if index.ignores_file:
+        ignores_path = index.ignores_file
+    else:
+        ignores_path = os.path.join(index.root_path, '.mnignore')
+
+    if os.path.isfile(ignores_path):
+        ignores = Ignores.read(ignores_path, index.root_path)
+    else:
+        ignores = Ignores()
+
+    return ignores
+
+
+def get_context(index_path, index_required=True):
+    index = get_index(index_path)
+
+    if not index and index_required:
+        error("Cannot find index file '.mnindex' in this or any parent dir")
+        # XXX XXX TODO write util.abort() or something, to exit centrally
+        import sys
+        sys.exit(1)
+
+    if index:
+        ignores = get_ignores(index)
+    else:
+        ignores = Ignores()
+
+    return MNContext(index, ignores)
+
+
 @click.group()
 def main():
     pass
