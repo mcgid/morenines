@@ -4,7 +4,6 @@ import sys
 
 from morenines.index import Index
 from morenines.ignores import Ignores
-from morenines.remote import FakeRemote
 from morenines.util import get_files, get_hash, get_new_and_missing
 from morenines.output import success, warning, error, print_filelists
 
@@ -119,39 +118,5 @@ def verify(index_file, show_ignored):
     print_filelists(new_files, changed_files, missing_files, ignored_files)
 
 
-@main.command()
-@common_params('index')
-@click.option('--force/--no-force', 'force', default=False)
-def push(index_file, force):
-    index = Index.read(index_file)
-    remotes = [FakeRemote(None)]
-
-    ignores = Ignores.read(index.ignores_file, index.root_path)
-
-    # Check for new or missing files before pushing remotely
-    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores)
-
-    if any([new_files, missing_files]):
-        message = "Index file is out-of-date (there are new or missing files in the tree)"
-        if force:
-            warning(message + "\n" + "Pushing anyway because --force was used")
-        else:
-            error(message + "\n" + "(Use --force option to push anyway)")
-            sys.exit(1)
-
-    for remote in remotes:
-        remote_blobs = remote.get_blob_list()
-
-        files_to_upload = []
-
-        for path, hash_ in index.files.iteritems():
-            if hash_ not in remote_blobs:
-                files_to_upload.append(path)
-
-        for path in files_to_upload:
-            remote.upload(path)
-
-
 if __name__ == '__main__':
     main()
-
