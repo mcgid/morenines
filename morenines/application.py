@@ -115,31 +115,27 @@ def create(ignores_path, root_path, output_path):
 @click.option('--remove-missing/--no-remove-missing', default=False)
 @click.option('--new-root', 'new_root', type=_path_type['existing dir'])
 def update(index_file, remove_missing, new_root):
-    index = Index.read(index_file)
+    context = get_context(index_file)
 
     if new_root:
-        index.root_path = new_root
+        context.index.root_path = new_root
 
-    ignores = Ignores.read(index.ignores_file, index.root_path)
+    new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores)
 
-    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores)
-
-    index.add(new_files)
+    context.index.add(new_files)
 
     if remove_missing is True:
-        index.remove(missing_files)
+        context.index.remove(missing_files)
 
-    index.write(sys.stdout)
+    context.index.write(sys.stdout)
 
 
 @main.command()
 @common_params('index', 'ignored')
 def status(index_file, show_ignored):
-    index = Index.read(index_file)
+    context = get_context(index_file)
 
-    ignores = Ignores.read(index.ignores_file, index.root_path)
-
-    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, show_ignored)
+    new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores, show_ignored)
 
     print_filelists(new_files, None, missing_files, ignored_files)
 
@@ -147,19 +143,17 @@ def status(index_file, show_ignored):
 @main.command()
 @common_params('index', 'ignored')
 def verify(index_file, show_ignored):
-    index = Index.read(index_file)
+    context = get_context(index_file)
 
-    ignores = Ignores.read(index.ignores_file, index.root_path)
-
-    new_files, missing_files, ignored_files = get_new_and_missing(index, ignores, show_ignored)
+    new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores, show_ignored)
 
     changed_files = []
 
-    for path, old_hash in index.files.iteritems():
+    for path, old_hash in context.index.files.iteritems():
         if path in missing_files:
             continue
 
-        current_hash = get_hash(os.path.join(index.root_path, path))
+        current_hash = get_hash(os.path.join(context.index.root_path, path))
 
         if current_hash != old_hash:
             changed_files.append(path)
