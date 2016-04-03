@@ -4,7 +4,6 @@ import datetime
 import click
 
 from morenines.util import get_hash, find_file
-from morenines.output import error
 
 
 class Index(object):
@@ -23,15 +22,6 @@ class Index(object):
 
     @classmethod
     def read(cls, path):
-        if not path:
-            path = find_file('.mnindex')
-
-            if not path:
-                error("Cannot find index file '.mnindex' in this or any parent dir")
-                # XXX XXX TODO write util.abort() or something, to exit centrally
-                import sys
-                sys.exit(1)
-
         with click.open_file(path, 'r') as stream:
             headers = parse_headers(stream)
 

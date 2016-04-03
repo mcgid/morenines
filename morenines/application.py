@@ -54,7 +54,7 @@ def get_ignores(index):
         ignores_path = os.path.join(index.root_path, '.mnignore')
 
     if os.path.isfile(ignores_path):
-        ignores = Ignores.read(ignores_path, index.root_path)
+        ignores = Ignores.read(ignores_path)
     else:
         ignores = Ignores()
 
@@ -98,7 +98,7 @@ def create(ignores_path, root_path, output_path):
 
     index = Index(root_path, ignores_path)
 
-    ignores = Ignores.read(ignores_path, root_path)
+    ignores = get_ignores(index)
 
     files, ignored = get_files(index.root_path, ignores)
 
