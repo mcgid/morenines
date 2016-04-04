@@ -114,12 +114,19 @@ def create(ignores_path, root_path, output_path):
 @common_params('index')
 @click.option('--remove-missing/--no-remove-missing', default=False)
 @click.option('--new-root', 'new_root', type=_path_type['existing dir'])
+@click.option('--new-ignores-file', type=_path_type['existing file'])
 @click.option('-o', '--output', 'output_path', default=os.path.join(os.getcwd(), '.mnindex'), type=_path_type['file'])
-def update(index_file, remove_missing, new_root, output_path):
+def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
     context = get_context(index_file)
 
     if new_root:
         context.index.root_path = new_root
+
+    # Just update the ignores file header, without trying to read that new file
+    # This seems least surprising, since we're creating the new index based on
+    # the current one, and the current one is influenced by the current ignores file.
+    if new_ignores_file:
+        context.index.ignores_file = new_ignores_file
 
     new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores)
 
