@@ -6,7 +6,7 @@
 
 - [ ] Centralize default file names for .mnindex and .mnignore
 
-## Admin
+## Administration
 
 - [ ] Remove existing git tags
 - [ ] Finish writing setup.py
@@ -20,9 +20,11 @@
     - [ ] for Index/Ignores
     - [ ] for output and util
     - [ ] for modules
+- [ ] Update README.md
+    - [ ] with new text
+    - [ ] with a simple class diagram
 
-
-## Shipping
+## Packaging and Shipping
 - [ ] Publish to PyPI
     - [ ] Look up how to do this again
 
@@ -33,6 +35,18 @@
 - [ ] Add --all option to verify (would this print out the hash for each file
       as they're traversed?)
 - [ ] Review variable names again
+- [ ] Move MNContext, Index and Ignores to a single file (e.g. model.py? context.py?)
+- [ ] Convert `@common_params()` to separate decorators for each param, to make
+      it more obvious which ones are being used?
+- [ ] Move `get_context()`, `get_index()`, `get_ignores` to util.py?
+- [ ] Create `util.abort()` or something, to centralize failure exiting?
+- [ ] Do a better job of dealing with file writing in create and update
+      commands? Including rewriting 'path/to/-' to just '-', to facilitate
+      writing to stdout
+- [ ] Rename `get_new_and_missing()` because ew
+- [ ] Rethink the interaction between `find_file()`, `get_ignores()`, etc -- it
+      seems like the current structure is somewhat haphazard. Does it need a
+      Repo class or something to manage things in an objecty way?
 
 ---
 
