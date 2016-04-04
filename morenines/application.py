@@ -17,6 +17,7 @@ _path_type = {
 _common_params = {
     'index': click.argument('index_file', required=False, type=_path_type['file']),
     'ignored': click.option('-i', '--ignored/--no-ignored', 'show_ignored', default=False),
+    'color': click.option('--color/--no-color', 'show_color', default=True),
 }
 
 
@@ -143,18 +144,22 @@ def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
 
 
 @main.command()
-@common_params('index', 'ignored')
-def status(index_file, show_ignored):
+@common_params('index', 'ignored', 'color')
+@click.pass_context
+def status(ctx, index_file, show_ignored, show_color):
     context = get_context(index_file)
 
     new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores, show_ignored)
+
+    ctx.color = show_color
 
     print_filelists(new_files, None, missing_files, ignored_files)
 
 
 @main.command()
-@common_params('index', 'ignored')
-def verify(index_file, show_ignored):
+@common_params('index', 'ignored', 'color')
+@click.pass_context
+def verify(ctx, index_file, show_ignored, show_color):
     context = get_context(index_file)
 
     new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores, show_ignored)
@@ -169,6 +174,8 @@ def verify(index_file, show_ignored):
 
         if current_hash != old_hash:
             changed_files.append(path)
+
+    ctx.color = show_color
 
     print_filelists(new_files, changed_files, missing_files, ignored_files)
 
