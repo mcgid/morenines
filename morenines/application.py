@@ -114,7 +114,8 @@ def create(ignores_path, root_path, output_path):
 @common_params('index')
 @click.option('--remove-missing/--no-remove-missing', default=False)
 @click.option('--new-root', 'new_root', type=_path_type['existing dir'])
-def update(index_file, remove_missing, new_root):
+@click.option('-o', '--output', 'output_path', default=os.path.join(os.getcwd(), '.mnindex'), type=_path_type['file'])
+def update(index_file, remove_missing, new_root, output_path):
     context = get_context(index_file)
 
     if new_root:
@@ -127,7 +128,11 @@ def update(index_file, remove_missing, new_root):
     if remove_missing is True:
         context.index.remove(missing_files)
 
-    context.index.write(sys.stdout)
+    if os.path.basename(output_path) == '-':
+        output_path = '-'
+
+    with click.open_file(output_path, mode='w') as stream:
+        context.index.write(stream)
 
 
 @main.command()
