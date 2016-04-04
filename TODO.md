@@ -1,115 +1,92 @@
 # To-Do
 
-## 0.0.1
+# 1.0.0
 
-Add:
+## Final Changes
 
-- `mn list-tree`
-- `mn status`
+- [ ] Centralize default file names for .mnindex and .mnignore
 
-## Unassigned
+## Admin
 
-Add:
+- [ ] Remove existing git tags
+- [ ] Finish writing setup.py
+- [ ] Install and configure tox
+- [ ] Install and configure Sphinx
 
-- Definition of files and dirs in .morenines directory:
-    - file structure?
-        - How to track the directory trees over time?
-        - Save the trees as header + file list and name as SHA-1? (like object
-          files in git? except only saving tree files?)
-
-    - file names: index? objects? trees?
-
-    - The file format could be informed heavily by the git index file format,
-      using the lessons git learned
-        - This may be too heavyweight, though: readable text files that are
-          slower to process are more desirable than inscrutable, highly
-          efficient binary formats (at least, for now)
-
-    Problems:
-        - Will this support for file permissions, uid/gid, other stat(2) info?
-            - The required info to perfectly recreate a file varies by platform:
-              OS X requires xattr(1) extended attributes, and who knows what
-              Windows requires.
-
-            - This is a problem for the future.
-
-        - This is already looking very similar to git, except it won't work
-          exactly the same.
-
-        - Will there be a `commit` verb? Or will `add`, `delete`, etc.
-          immediately create a new treelist, and point the "HEAD" file to it?
-          This could result in a LOT of treelists if files are specified
-          individually. Particularly if another script calls those verbs for
-          some reason.
-
-    See:
-        - https://git.io/v2STO
-
-- `morenines init <path>`
-  create:
-    .morenines/
-        HEAD
-        config
-        ...?
-        index? (Put the file lists in the objects dir instead?)
-        objects/ ? (Maybe better named 'trees' or something?)
-
-- `morenines add <path> [<path> ...]`
-    1. for each file `<path>` hash it (collect them into a temp file list?)
-    2. for each directory `<path>`, generate current file list with that path
-    3. for each file in each file list in 2., hash it
-    4. gather all file hashes and create a new index/tree/whatever file
-    5. update the 'HEAD' (or whatever) file
-
-- `morenines status`
-    1. generate current file list with path `<root_dir>`
-    2. diff stored file list and current file list
-    3. print
-
-- `morenines remove` or `morenines delete` or `morenines rm` or whatever (probably `remove`)
-
-- `morenines push`
-    - get list of blobs from remote
-    - open index file
-    - for path in index:
-        - if hash not in remote blobs:
-            add path to upload list
-    - for path in upload list:
-        - generate md5 [GCS -- can AWS use this? b2?]
-        - upload with md5
-
-- `morenines pull <path>` or `morenines download <path>` or `morenines fetch <path>` or
-  something (probably not "pull", since push/pull args would be asymmetrical)
-    - Download a file ("path") from the primary configured remote
-
-- `morenines config <something>`
-    - Update the `config` file with whatever settings
-    - Most importantly: the config info for `[remote]` key-value stores
-
-- `morenines report` (or something)
-    - subcommand that completely re-hashes all tracked files and compares the
-    results to the stored hashes. Include per-file unmodified/modified info for
-    each file in addition to `status` output. (I.e.  `report` output is a
-    strict superset of `status` output.
-
-- "plumbing" subcommands for use by "porcelain" commands:
-    - `list-tree`: lists files in a directory tree
-    - `hash-tree`: hashes everything in a directory tree
-
-- `setup.py` file
+## Documentation
+- [ ] Add (click) help text for each command
+- [ ] Write Sphinx documentation
+    - [ ] for commands
+    - [ ] for Index/Ignores
+    - [ ] for output and util
+    - [ ] for modules
 
 
-## Future Ideas
+## Shipping
+- [ ] Publish to PyPI
+    - [ ] Look up how to do this again
 
 
-    See:
-        - https://git.io/v2STO
+# Post-1.0.0 New Features and Changes
+
+- [ ] Add --all option to status (to print each file in index with its status)
+- [ ] Add --all option to verify (would this print out the hash for each file
+      as they're traversed?)
+- [ ] Review variable names again
+
+---
+
+# Future Ideas
+
+## Add `push` command
+1. Get list of blobs from remote
+2. Open index file
+3. For path in index, if hash not in remote blobs: add path to upload list
+4. For path in upload list, [GCS: generate md5], upload [with md5]
 
 
-- Support for hashing only chunks of large files - e.g. verify each 100MB or
-  1GB of a 10GB separately, so any corruption would only require a chunk-sized
-  download.
+## Add `pull` command
 
-    Problems:
-        - Writing just one chunk to a file seems like a deceiptively tricky
-          problem, and could completely corrupt the file.
+Download a file from the primary configured remote.
+
+1. Look up `<path>` in index to get the desired `hash`
+2. Ask remote for blob for key `hash`
+3. Write blob to temp file using `<hash>.download` as its name
+    - Where to store temp file? In `root_path`? In `dirname(<path>)`?
+3. Rename current `<path>` (if present) to `<path>.old`, and `<hash>.download`
+
+Possible names:
+
+``` bash
+$ mn pull <path>     # Bad?: not the same arguments or semantics to "mn push"
+$ mn download <path>
+$ mn fetch <path>
+```
+
+## Add `config` file and command
+
+Similar to `git config`. Most immediate use: writing configuration info for
+remote blob storage.
+
+
+## Check file perms are read-only during `verify`
+
+
+## Add special status/verify error message for when all indexed files are missing
+
+If everything's gone, the index file might have been moved. So the error
+message could include something like, '(All files are missing; was the index
+file moved?)'
+
+
+## Hash chunks of files
+Support for hashing only chunks of large files - e.g. verify each 100MB or
+1GB of a 10GB separately, so any corruption would only require a chunk-sized
+download.
+
+Problems:
+
+- Writing just one chunk to a file seems like a deceiptively tricky problem,
+  and could completely corrupt the file.
+- In general I'm trying to do things atomically (like renaming files in two
+  stages, instead of overwriting them). This is the opposite of that.
