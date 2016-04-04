@@ -4,7 +4,7 @@ import sys
 
 from morenines.index import Index
 from morenines.ignores import Ignores
-from morenines.util import get_files, get_hash, get_new_and_missing
+from morenines.util import get_files, get_hash, get_new_and_missing, find_file
 from morenines.output import success, warning, error, print_filelists
 
 _path_type = {
@@ -160,6 +160,22 @@ def verify(index_file, show_ignored):
 
     print_filelists(new_files, changed_files, missing_files, ignored_files)
 
+
+@main.command(name='edit-ignores')
+@click.option('--ignores-file', 'ignores_path', type=_path_type['file'])
+def edit_ignores(ignores_path):
+    context = get_context(None, index_required=False)
+
+    # TODO Make get_ignores_path() and call it from here and from get_ignores() ?
+    if context.index:
+        if context.index.ignores_file:
+            path = context.index.ignores_file
+        else:
+            path = os.path.join(context.index.root_path, '.mnignore')
+    else:
+        path = os.path.join(os.getcwd(), '.mnignore')
+
+    click.edit(filename=path)
 
 if __name__ == '__main__':
     main()
