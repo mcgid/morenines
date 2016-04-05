@@ -47,6 +47,12 @@
 - [ ] Rethink the interaction between `find_file()`, `get_ignores()`, etc -- it
       seems like the current structure is somewhat haphazard. Does it need a
       Repo class or something to manage things in an objecty way?
+- [ ] Make output consistent and logical across commands
+    - [ ] Use logging (or something) to record all state and decisions: found
+          files, selected options (via command line, config file, program
+          default, etc.)
+    - [ ] Add -q|--quiet options
+    - [ ] Set sane defaults for output
 
 ---
 
