@@ -31,52 +31,77 @@ def common_params(*param_names):
 
 
 class MNContext(object):
-    def __init__(self, index, ignores):
+    def __init__(self, config, index, ignores):
+        self.config = config
         self.index = index
         self.ignores = ignores
 
 
-def get_index(index_path):
-    if not index_path:
-        index_path = find_file('.mnindex')
-
-    if index_path:
-        index = Index.read(index_path)
+def get_index_path(config):
+    if 'index_path' in config:
+        return config['index_path']
     else:
-        index = None
-
-    return index
+        return find_file('.mnindex')
 
 
-def get_ignores(index):
-    if index.ignores_file:
-        ignores_path = index.ignores_file
+def get_ignores_path(config):
+    if 'ignores_file' in config:
+        path = config['ignores_file']
+    elif 'root_path' in config:
+        path = os.path.join(config['root_path'], '.mnignore')
     else:
-        ignores_path = os.path.join(index.root_path, '.mnignore')
+        return None
 
-    if os.path.isfile(ignores_path):
-        ignores = Ignores.read(ignores_path)
+    if os.path.isfile(path):
+        return path
     else:
-        ignores = Ignores()
+        return None
 
-    return ignores
+
+def get_default_config(cwd):
+    INDEX_FILENAME = '.mnindex'
+    IGNORES_FILENAME = '.mnignore'
+
+    default_config = {
+        'default_index_filename': INDEX_FILENAME,
+        'default_ignores_filename': IGNORES_FILENAME,
+        'default_index_path': os.path.join(cwd, INDEX_FILENAME),
+        'default_ignores_path': os.path.join(cwd, IGNORES_FILENAME),
+    }
+
+    return default_config
 
 
 def get_context(index_path, index_required=True):
-    index = get_index(index_path)
+    config = get_default_config(os.getcwd())
 
-    if not index and index_required:
+    index_path = get_index_path(config)
+
+    if index_path:
+        config['index_path'] = index_path
+
+        index = Index.read(index_path)
+
+        config['root_path'] = index.root_path
+        config['ignores_file'] = index.ignores_file
+    elif not index_path and index_required:
         error("Cannot find index file '.mnindex' in this or any parent dir")
         # XXX XXX TODO write util.abort() or something, to exit centrally
         import sys
         sys.exit(1)
+    else:
+        index = None
 
-    if index:
-        ignores = get_ignores(index)
+    ignores_path = get_ignores_path(config)
+
+    if ignores_path:
+        config['ignores_file'] = ignores_path
+
+        ignores = Ignores.read(ignores_path)
     else:
         ignores = Ignores()
 
-    return MNContext(index, ignores)
+    return MNContext(config, index, ignores)
 
 
 @click.group()
@@ -97,11 +122,11 @@ def create(ignores_path, root_path, output_path):
     if os.path.basename(output_path) == '-':
         output_path = '-'
 
+    context = get_context(None, index_required=False)
+
     index = Index(root_path, ignores_path)
 
-    ignores = get_ignores(index)
-
-    files, ignored = get_files(index.root_path, ignores)
+    files, ignored = get_files(index.root_path, context.ignores)
 
     index.add(files)
 
