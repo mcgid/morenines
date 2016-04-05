@@ -34,28 +34,43 @@
 
 # Post-1.0.0 New Features and Changes
 
+## General
+
 - [ ] Add --all option to status (to print each file in index with its status)
 - [ ] Add --all option to verify (would this print out the hash for each file
       as they're traversed?)
 - [ ] Review variable names again
-- [ ] Move MNContext, Index and Ignores to a single file (e.g. model.py? context.py?)
 - [ ] Convert `@common_params()` to separate decorators for each param, to make
       it more obvious which ones are being used?
-- [ ] Move `get_context()`, `get_index()`, `get_ignores` to util.py?
 - [ ] Create `util.abort()` or something, to centralize failure exiting?
-- [ ] Do a better job of dealing with file writing in create and update
-      commands? Including rewriting 'path/to/-' to just '-', to facilitate
-      writing to stdout
 - [ ] Rename `get_new_and_missing()` because ew
-- [ ] Rethink the interaction between `find_file()`, `get_ignores()`, etc -- it
-      seems like the current structure is somewhat haphazard. Does it need a
-      Repo class or something to manage things in an objecty way?
 - [ ] Make output consistent and logical across commands
     - [ ] Use logging (or something) to record all state and decisions: found
           files, selected options (via command line, config file, program
           default, etc.)
     - [ ] Add -q|--quiet options
     - [ ] Set sane defaults for output
+
+## Things related to configuration
+
+The way things are configured right now (`get_context()`) is essentially
+haphazard, and not terribly well-planned. A handful of functions accept a
+`config` object, others don't, and there's not a lot of consistency. This needs
+to be consistent and reliable if the whole thing isn't going to fall in on
+itself.
+
+- [ ] Figure out a comprehensive way to structure configuration and state
+    - [ ] Separate Index headers from files? So that headers like `root_path`
+          get pulled out and kept in a single config object?
+    - [ ] Find some way to make default config values guaranteed?
+- [ ] Move MNContext, Index and Ignores to a single file (e.g. model.py? context.py?)
+- [ ] Move `get_context()`, `get_index()`, `get_ignores` to util.py?
+- [ ] Do a better job of dealing with file writing in create and update
+      commands? Including rewriting 'path/to/-' to just '-', to facilitate
+      writing to stdout
+- [ ] Rethink the interaction between `find_file()`, `get_ignores()`, etc -- it
+      seems like the current structure is somewhat haphazard. Does it need a
+      Repo class or something to manage things in an objecty way?
 
 ---
 
