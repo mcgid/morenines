@@ -75,6 +75,9 @@ def get_default_config(cwd):
 def get_context(index_path, index_required=True):
     config = get_default_config(os.getcwd())
 
+    if index_path:
+        config['index_path'] = index_path
+
     index_path = get_index_path(config)
 
     if index_path:
@@ -141,7 +144,7 @@ def create(ignores_path, root_path, output_path):
 @click.option('--remove-missing/--no-remove-missing', default=False)
 @click.option('--new-root', 'new_root', type=_path_type['existing dir'])
 @click.option('--new-ignores-file', type=_path_type['existing file'])
-@click.option('-o', '--output', 'output_path', default=os.path.join(os.getcwd(), '.mnindex'), type=_path_type['file'])
+@click.option('-o', '--output', 'output_path', type=_path_type['file'])
 def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
     context = get_context(index_file)
 
@@ -161,8 +164,11 @@ def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
     if remove_missing is True:
         context.index.remove(missing_files)
 
-    if os.path.basename(output_path) == '-':
-        output_path = '-'
+    if output_path:
+        if os.path.basename(output_path) == '-':
+            output_path = '-'
+    else:
+        output_path = context.config['index_path']
 
     with click.open_file(output_path, mode='w') as stream:
         context.index.write(stream)
