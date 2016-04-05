@@ -210,14 +210,10 @@ def verify(ctx, index_file, show_ignored, show_color):
 def edit_ignores(ignores_path):
     context = get_context(None, index_required=False)
 
-    # TODO Make get_ignores_path() and call it from here and from get_ignores() ?
-    if context.index:
-        if context.index.ignores_file:
-            path = context.index.ignores_file
-        else:
-            path = os.path.join(context.index.root_path, '.mnignore')
+    if 'ignores_file' in context.config:
+        path = context.config['ignores_file']
     else:
-        path = os.path.join(os.getcwd(), '.mnignore')
+        path = context.config['default_ignores_file']
 
     click.edit(filename=path)
 
