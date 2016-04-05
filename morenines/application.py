@@ -110,16 +110,18 @@ def get_context(index_path, index_required=True):
 
 @click.group()
 def main():
+    """A tool to track whether the content of files has changed."""
     pass
 
 
-@main.command()
+@main.command(short_help="Write a new index file")
 @click.option('--ignores-file', 'ignores_path', type=_path_type['existing file'])
 @click.option('-o', '--output', 'output_path', type=_path_type['new file'])
 @click.argument('root_path', required=True, default=os.getcwd(), type=_path_type['existing dir'])
 def create(ignores_path, root_path, output_path):
     context = get_context(None, index_required=False)
 
+    """Write a new index file with the hashes of files under it."""
     if output_path:
         if os.path.basename(output_path) == '-':
             output_path = '-'
@@ -142,13 +144,14 @@ def create(ignores_path, root_path, output_path):
     success('Wrote index file {}'.format(output_path))
 
 
-@main.command()
+@main.command(short_help="Update an existing index file")
 @common_params('index')
 @click.option('--remove-missing/--no-remove-missing', default=False)
 @click.option('--new-root', 'new_root', type=_path_type['existing dir'])
 @click.option('--new-ignores-file', type=_path_type['existing file'])
 @click.option('-o', '--output', 'output_path', type=_path_type['file'])
 def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
+    """Update an existing index file with new file hashes, missing files removed, etc."""
     context = get_context(index_file)
 
     if new_root:
@@ -177,10 +180,11 @@ def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
         context.index.write(stream)
 
 
-@main.command()
+@main.command(short_help="Show new, missing or ignored files")
 @common_params('index', 'ignored', 'color')
 @click.pass_context
 def status(ctx, index_file, show_ignored, show_color):
+    """Show any new files not in the index, index files that are missing, or ignored files."""
     context = get_context(index_file)
 
     new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores, show_ignored)
@@ -190,10 +194,11 @@ def status(ctx, index_file, show_ignored, show_color):
     print_filelists(new_files, None, missing_files, ignored_files)
 
 
-@main.command()
+@main.command(short_help="Re-hash all index files to show any changes")
 @common_params('index', 'ignored', 'color')
 @click.pass_context
 def verify(ctx, index_file, show_ignored, show_color):
+    """Re-hash all files in the index and compare the index and current checksums."""
     context = get_context(index_file)
 
     new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores, show_ignored)
@@ -214,9 +219,10 @@ def verify(ctx, index_file, show_ignored, show_color):
     print_filelists(new_files, changed_files, missing_files, ignored_files)
 
 
-@main.command(name='edit-ignores')
+@main.command(name='edit-ignores', short_help="Open the ignores file in an editor")
 @click.option('--ignores-file', 'ignores_path', type=_path_type['file'])
 def edit_ignores(ignores_path):
+    """Open an existing or a new ignores file in an editor."""
     context = get_context(None, index_required=False)
 
     if 'ignores_file' in context.config:
