@@ -41,14 +41,14 @@ def get_index_path(config):
     if 'index_path' in config:
         return config['index_path']
     else:
-        return find_file('.mnindex')
+        return find_file(config['default_index_filename'])
 
 
 def get_ignores_path(config):
     if 'ignores_file' in config:
         path = config['ignores_file']
     elif 'root_path' in config:
-        path = os.path.join(config['root_path'], '.mnignore')
+        path = os.path.join(config['root_path'], config['default_ignores_filename'])
     else:
         return None
 
@@ -88,9 +88,8 @@ def get_context(index_path, index_required=True):
         config['root_path'] = index.root_path
         config['ignores_file'] = index.ignores_file
     elif not index_path and index_required:
-        error("Cannot find index file '.mnindex' in this or any parent dir")
+        error("Cannot find index file '{}' in this or any parent dir".format(config['default_index_filename']))
         # XXX XXX TODO write util.abort() or something, to exit centrally
-        import sys
         sys.exit(1)
     else:
         index = None
@@ -114,16 +113,18 @@ def main():
 
 @main.command()
 @click.option('--ignores-file', 'ignores_path', type=_path_type['existing file'])
-@click.option('-o', '--output', 'output_path', default=os.path.join(os.getcwd(), '.mnindex'), type=_path_type['new file'])
+@click.option('-o', '--output', 'output_path', type=_path_type['new file'])
 @click.argument('root_path', required=True, default=os.getcwd(), type=_path_type['existing dir'])
 def create(ignores_path, root_path, output_path):
-    if os.path.exists(output_path):
-        error("Index file {} already exists".format(output_path))
-        error("(To update an existing index file, use the 'update' command)")
-        sys.exit(1)
-
-    if os.path.basename(output_path) == '-':
-        output_path = '-'
+    if output_path:
+        if os.path.basename(output_path) == '-':
+            output_path = '-'
+        elif os.path.exists(output_path):
+            error("Index file {} already exists".format(output_path))
+            error("(To update an existing index file, use the 'update' command)")
+            sys.exit(1)
+    else:
+        output_path = context.config['index_path']
 
     context = get_context(None, index_required=False)
 

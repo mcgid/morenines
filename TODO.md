@@ -7,7 +7,7 @@
 - [x] Fix bug: update does not overwrite the index file it read
     - [x] Add the detected `index_path` to the context object
     - [x] Make update base its decision based on the index path
-- [ ] Centralize default file names for .mnindex and .mnignore
+- [x] Centralize default file names for .mnindex and .mnignore
 
 ## Administration
 
