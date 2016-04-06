@@ -20,10 +20,9 @@ Let's track those files.
 ```bash
 $ mn create
 SUCCESS: Wrote index file /Users/example/photos/.mnindex
-$
 ```
 
-We'll make some changes, and then check the verify the index.
+We'll make some changes, and then verify the index to see any changes.
 
 ```bash
 $ rm TEMPFILE.dat
