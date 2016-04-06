@@ -18,18 +18,22 @@
 
 ## Documentation
 - [x] Add (click) help text for each command
+- [x] Update README.md
+    - [x] with new text
+
+## Packaging and Shipping
+- [ ] Publish to PyPI
+    - [ ] Look up how to do this again
+
+
+# POSTPONED
+- [ ] Update README.md
+    - [ ] with a simple class diagram
 - [ ] Write Sphinx documentation
     - [ ] for commands
     - [ ] for Index/Ignores
     - [ ] for output and util
     - [ ] for modules
-- [ ] Update README.md
-    - [ ] with new text
-    - [ ] with a simple class diagram
-
-## Packaging and Shipping
-- [ ] Publish to PyPI
-    - [ ] Look up how to do this again
 
 
 # Post-1.0.0 New Features and Changes
@@ -71,6 +75,13 @@ itself.
 - [ ] Rethink the interaction between `find_file()`, `get_ignores()`, etc -- it
       seems like the current structure is somewhat haphazard. Does it need a
       Repo class or something to manage things in an objecty way?
+
+### UPDATE
+
+It looks like a Repository class, and having the universal `<repo_path>`
+parameter to all commands, is the way to go. Simplifies a lot of things.
+
+Further analysis is in the (private) `design/PLANS.txt` file.
 
 ---
 
