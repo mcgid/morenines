@@ -92,6 +92,7 @@ def get_context(index_path, index_required=True):
         # XXX XXX TODO write util.abort() or something, to exit centrally
         sys.exit(1)
     else:
+        config['index_path'] = config['default_index_path']
         index = None
 
     ignores_path = get_ignores_path(config)
@@ -101,6 +102,7 @@ def get_context(index_path, index_required=True):
 
         ignores = Ignores.read(ignores_path)
     else:
+        config['ignores_file'] = config['default_ignores_path']
         ignores = Ignores()
 
     return MNContext(config, index, ignores)
@@ -116,6 +118,8 @@ def main():
 @click.option('-o', '--output', 'output_path', type=_path_type['new file'])
 @click.argument('root_path', required=True, default=os.getcwd(), type=_path_type['existing dir'])
 def create(ignores_path, root_path, output_path):
+    context = get_context(None, index_required=False)
+
     if output_path:
         if os.path.basename(output_path) == '-':
             output_path = '-'
@@ -125,8 +129,6 @@ def create(ignores_path, root_path, output_path):
             sys.exit(1)
     else:
         output_path = context.config['index_path']
-
-    context = get_context(None, index_required=False)
 
     index = Index(root_path, ignores_path)
 
