@@ -16,8 +16,8 @@ _path_type = {
 
 _common_params = {
     'index': click.argument('index_file', required=False, type=_path_type['file']),
-    'ignored': click.option('-i', '--ignored/--no-ignored', 'show_ignored', default=False),
-    'color': click.option('--color/--no-color', 'show_color', default=True),
+    'ignored': click.option('-i', '--ignored/--no-ignored', 'show_ignored', default=False, help="Enable/disable showing files ignored by the ignores patterns."),
+    'color': click.option('--color/--no-color', 'show_color', default=True, help="Enable/disable colorized output."),
 }
 
 
@@ -115,8 +115,8 @@ def main():
 
 
 @main.command(short_help="Write a new index file")
-@click.option('--ignores-file', 'ignores_path', type=_path_type['existing file'])
-@click.option('-o', '--output', 'output_path', type=_path_type['new file'])
+@click.option('--ignores-file', 'ignores_path', type=_path_type['existing file'], help="The path to an existing ignores file.")
+@click.option('-o', '--output', 'output_path', type=_path_type['new file'], help="The path where the index file should be written.")
 @click.argument('root_path', required=True, default=os.getcwd(), type=_path_type['existing dir'])
 def create(ignores_path, root_path, output_path):
     context = get_context(None, index_required=False)
@@ -146,10 +146,10 @@ def create(ignores_path, root_path, output_path):
 
 @main.command(short_help="Update an existing index file")
 @common_params('index')
-@click.option('--remove-missing/--no-remove-missing', default=False)
-@click.option('--new-root', 'new_root', type=_path_type['existing dir'])
-@click.option('--new-ignores-file', type=_path_type['existing file'])
-@click.option('-o', '--output', 'output_path', type=_path_type['file'])
+@click.option('--remove-missing/--no-remove-missing', default=False, help="Delete any the hashes of any files in the index that no longer exist.")
+@click.option('--new-root', 'new_root', type=_path_type['existing dir'], help="New location of the root directory.")
+@click.option('--new-ignores-file', type=_path_type['existing file'], help="New location of the ignores file.")
+@click.option('-o', '--output', 'output_path', type=_path_type['file'], help="The path where the updated index file should be written.")
 def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
     """Update an existing index file with new file hashes, missing files removed, etc."""
     context = get_context(index_file)
@@ -220,7 +220,7 @@ def verify(ctx, index_file, show_ignored, show_color):
 
 
 @main.command(name='edit-ignores', short_help="Open the ignores file in an editor")
-@click.option('--ignores-file', 'ignores_path', type=_path_type['file'])
+@click.option('--ignores-file', 'ignores_path', type=_path_type['file'], help="The path to an existing ignores file, or the path to which a new ignores file should be written.")
 def edit_ignores(ignores_path):
     """Open an existing or a new ignores file in an editor."""
     context = get_context(None, index_required=False)

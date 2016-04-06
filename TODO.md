@@ -17,7 +17,7 @@
 - [ ] Install and configure Sphinx
 
 ## Documentation
-- [ ] Add (click) help text for each command
+- [x] Add (click) help text for each command
 - [ ] Write Sphinx documentation
     - [ ] for commands
     - [ ] for Index/Ignores
