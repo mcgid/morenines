@@ -12,9 +12,7 @@
 ## Administration
 
 - [ ] Remove existing git tags
-- [ ] Finish writing setup.py
-- [ ] Install and configure tox
-- [ ] Install and configure Sphinx
+- [ ] Tag for release
 
 ## Documentation
 - [x] Add (click) help text for each command
@@ -22,8 +20,11 @@
     - [x] with new text
 
 ## Packaging and Shipping
+- [x] Finish writing setup.py
 - [ ] Publish to PyPI
-    - [ ] Look up how to do this again
+    - [x] Look up how to do this again
+    - [x] Write `DESCRIPTION.rst`
+    - [ ] Test whether package can be installed
 
 
 # POSTPONED
@@ -37,6 +38,14 @@
 
 
 # Post-1.0.0 New Features and Changes
+
+## Good Citizenship
+
+- [ ] Move code [into `src` dir][1]
+- [ ] Start using tox
+- [ ] Consider using Sphinx
+
+1: https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure
 
 ## General
 
