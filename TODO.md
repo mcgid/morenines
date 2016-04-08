@@ -24,7 +24,13 @@
 - [ ] Publish to PyPI
     - [x] Look up how to do this again
     - [x] Write `DESCRIPTION.rst`
-    - [ ] Test whether package can be installed
+    - [x] Write `setup.cfg` (for Wheel)
+    - [x] Test whether package can be installed
+    - [ ] Sign up for PyPI test server and create ~/.pypirc
+    - [ ] Register and upload to test server
+    - [ ] Install from test PyPI server
+    - [ ] Finish .pypirc
+    - [ ] Register and upload on actual PyPI server
 
 
 # POSTPONED
