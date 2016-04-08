@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(this_dir, 'DESCRIPTION.rst', encoding='utf8')) as f:
+with open(os.path.join(this_dir, 'DESCRIPTION.rst'), encoding='utf8') as f:
     long_desc = f.read()
 
 setup(
