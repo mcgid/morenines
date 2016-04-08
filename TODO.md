@@ -26,9 +26,9 @@
     - [x] Write `DESCRIPTION.rst`
     - [x] Write `setup.cfg` (for Wheel)
     - [x] Test whether package can be installed
-    - [ ] Sign up for PyPI test server and create ~/.pypirc
-    - [ ] Register and upload to test server
-    - [ ] Install from test PyPI server
+    - [x] Sign up for PyPI test server and create ~/.pypirc
+    - [x] Register and upload to test server
+    - [x] Install from test PyPI server
     - [ ] Finish .pypirc
     - [ ] Register and upload on actual PyPI server
 
