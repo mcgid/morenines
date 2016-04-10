@@ -8,7 +8,7 @@ from morenines.ignores import Ignores
 
 
 NAMES = {
-    'repo_dir': '.morenines',
+    'mn_dir': '.morenines',
     'index': 'index',
     'ignore': 'ignore',
 }
@@ -18,30 +18,42 @@ class Repository(object):
     def __init__(self):
         self.path = None
         self.index = None
-        self.ignores = None
+        self.ignore = None
+
+    def init_paths(self, repo_path):
+        self.path = repo_path
+        self.mn_dir_path = os.path.join(self.path, NAMES['mn_dir'])
+        self.index_path = os.path.join(self.mn_dir_path, NAMES['index'])
+        self.ignore_path = os.path.join(self.mn_dir_path, NAMES['ignore'])
 
     def open(self, path):
-        repo_dir_path = find_repo(path)
+        repo_path = find_repo(path)
 
-        if not repo_dir_path:
+        if not repo_path:
             output.error("Cannot find repository in '{}' or any parent dir".format(path))
             util.abort()
 
-        self.path = repo_dir_path
+        self.init_paths(repo_path)
 
-        self.index = Index.read(os.path.join(self.path, NAMES['index']))
+        if os.path.isfile(self.index_path):
+            self.index = Index.read(self.index_path)
+        else:
+            self.index = Index(self.path)
 
-        self.ignores = Ignores.read(os.path.join(self.path, NAMES['ignore']))
+        if os.path.isfile(self.ignore_path):
+            self.ignore = Ignores.read(self.ignore_path)
+        else:
+            self.ignore = Ignores()
 
 
 def find_repo(start_path):
     if start_path == '/':
         return None
 
-    path = os.path.join(start_path, NAMES['repo_dir'])
+    mn_dir_path = os.path.join(start_path, NAMES['mn_dir'])
 
-    if os.path.isdir(path):
-        return path
+    if os.path.isdir(mn_dir_path):
+        return start_path
 
     parent = os.path.split(start_path)[0]
 
