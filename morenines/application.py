@@ -203,7 +203,7 @@ def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
 @click.pass_context
 def status(ctx, repo, show_ignored, show_color, verify):
     """Show any new files not in the index, index files that are missing, or ignored files."""
-    new_files, missing_files, ignored_files = get_new_and_missing(repo.index, repo.ignores, show_ignored)
+    new_files, missing_files, ignored_files = get_new_and_missing(repo.index, repo.ignore, show_ignored)
 
     changed_files = []
 
