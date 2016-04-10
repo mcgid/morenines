@@ -196,23 +196,23 @@ def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
 
 
 @main.command(short_help="Show new, missing or ignored files")
-@common_params('index', 'ignored', 'color')
+@common_params('ignored', 'color')
 @click.option('--verify/--no-verify', default=False, help="Re-hash all files in index and check for changes")
+@repo_path_argument
+@pass_repository
 @click.pass_context
-def status(ctx, index_file, show_ignored, show_color, verify):
+def status(ctx, repo, show_ignored, show_color, verify):
     """Show any new files not in the index, index files that are missing, or ignored files."""
-    context = get_context(index_file)
-
-    new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores, show_ignored)
+    new_files, missing_files, ignored_files = get_new_and_missing(repo.index, repo.ignores, show_ignored)
 
     changed_files = []
 
     if verify:
-        for path, old_hash in context.index.files.iteritems():
+        for path, old_hash in repo.index.files.iteritems():
             if path in missing_files:
                 continue
 
-            current_hash = get_hash(os.path.join(context.index.root_path, path))
+            current_hash = get_hash(os.path.join(repo.index.root_path, path))
 
             if current_hash != old_hash:
                 changed_files.append(path)
