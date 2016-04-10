@@ -1,5 +1,10 @@
 import os
+import sys
 import hashlib
+
+def abort():
+    """Stop exectution and return nonzero error code"""
+    sys.exit(1)
 
 
 def get_files(root_path, ignores, save_ignored_paths=False):
