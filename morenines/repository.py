@@ -26,6 +26,22 @@ class Repository(object):
         self.index_path = os.path.join(self.mn_dir_path, NAMES['index'])
         self.ignore_path = os.path.join(self.mn_dir_path, NAMES['ignore'])
 
+    def create(self, path):
+        repo_path = find_repo(path)
+
+        if repo_path:
+            output.error("Repository already exists: {}".format(repo_path))
+            util.abort()
+
+        self.init_paths(path)
+
+        self.index = Index(self.path)
+
+        self.ignore = Ignores()
+
+        os.mkdir(self.mn_dir_path)
+
+
     def open(self, path):
         repo_path = find_repo(path)
 

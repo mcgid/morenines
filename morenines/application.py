@@ -129,6 +129,19 @@ def main():
     pass
 
 
+@main.command(short_help="Initialize a new morenines repository")
+@click.argument("repo_path", required=False, default=DEFAULT_PATH, type=click.Path(resolve_path=True))
+@click.pass_context
+def init(ctx, repo_path):
+    repo = Repository()
+
+    repo.create(repo_path)
+
+    ctx.obj = repo
+
+    success("Initialized empty morenines repository in {}".format(repo.mn_dir_path))
+
+
 @main.command(short_help="Write a new index file")
 @click.option('--ignores-file', 'ignores_path', type=_path_type['existing file'], help="The path to an existing ignores file.")
 @click.option('-o', '--output', 'output_path', type=_path_type['new file'], help="The path where the index file should be written.")
