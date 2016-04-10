@@ -4,6 +4,7 @@ import sys
 
 from morenines.index import Index
 from morenines.ignores import Ignores
+from morenines.repository import Repository
 from morenines.util import get_files, get_hash, get_new_and_missing, find_file
 from morenines.output import success, warning, error, print_filelists
 
@@ -106,6 +107,20 @@ def get_context(index_path, index_required=True):
         ignores = Ignores()
 
     return MNContext(config, index, ignores)
+
+pass_repository = click.make_pass_decorator(Repository, ensure=True)
+
+DEFAULT_PATH = os.getcwd()
+
+def repo_path_argument(func):
+    def repo_path_callback(ctx, param, value):
+        repo = ctx.ensure_object(Repository)
+        if value:
+            repo.open(value)
+        else:
+            repo.open(DEFAULT_PATH)
+        return value
+    return click.argument("repo_path", expose_value=False, required=False, callback=repo_path_callback)(func)
 
 
 @click.group()
