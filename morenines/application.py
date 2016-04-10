@@ -223,17 +223,13 @@ def status(ctx, repo, show_ignored, show_color, verify):
 
 
 @main.command(name='edit-ignores', short_help="Open the ignores file in an editor")
-@click.option('--ignores-file', 'ignores_path', type=_path_type['file'], help="The path to an existing ignores file, or the path to which a new ignores file should be written.")
-def edit_ignores(ignores_path):
+@repo_path_argument
+@pass_repository
+def edit_ignores(repo):
     """Open an existing or a new ignores file in an editor."""
-    context = get_context(None, index_required=False)
 
-    if 'ignores_file' in context.config:
-        path = context.config['ignores_file']
-    else:
-        path = context.config['default_ignores_file']
+    click.edit(filename=repo.ignore_path)
 
-    click.edit(filename=path)
 
 if __name__ == '__main__':
     main()
