@@ -79,7 +79,7 @@ def create(repo):
 @click.option('--remove-missing/--no-remove-missing', default=False, help="Delete any the hashes of any files in the index that no longer exist.")
 def update(repo, remove_missing):
     """Update an existing index file with new file hashes, missing files removed, etc."""
-    new_files, missing_files, ignored_files = get_new_and_missing(repo.index, repo.ignore)
+    new_files, missing_files, ignored_files = get_new_and_missing(repo)
 
     repo.index.add(new_files)
 
@@ -97,7 +97,7 @@ def update(repo, remove_missing):
 @click.pass_context
 def status(ctx, repo, show_ignored, show_color, verify):
     """Show any new files not in the index, index files that are missing, or ignored files."""
-    new_files, missing_files, ignored_files = get_new_and_missing(repo.index, repo.ignore, show_ignored)
+    new_files, missing_files, ignored_files = get_new_and_missing(repo, show_ignored)
 
     changed_files = []
 
@@ -106,7 +106,7 @@ def status(ctx, repo, show_ignored, show_color, verify):
             if path in missing_files:
                 continue
 
-            current_hash = get_hash(os.path.join(repo.index.root_path, path))
+            current_hash = get_hash(os.path.join(repo.path, path))
 
             if current_hash != old_hash:
                 changed_files.append(path)
