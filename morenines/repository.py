@@ -43,6 +43,13 @@ class Repository(object):
 
 
     def open(self, path):
+        if not os.path.exists(path):
+            output.error("Repository path does not exist: {}".format(path))
+            util.abort()
+        elif not os.path.isdir(path):
+            output.error("Repository path is not a directory: {}".format(path))
+            util.abort()
+
         repo_path = find_repo(path)
 
         if not repo_path:
