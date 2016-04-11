@@ -120,7 +120,7 @@ def repo_path_argument(func):
         else:
             repo.open(DEFAULT_PATH)
         return value
-    return click.argument("repo_path", expose_value=False, required=False, callback=repo_path_callback)(func)
+    return click.argument("repo_path", expose_value=False, required=False, callback=repo_path_callback, type=click.Path(resolve_path=True))(func)
 
 
 @click.group()
