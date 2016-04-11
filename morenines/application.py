@@ -9,11 +9,25 @@ from morenines.util import get_files, get_hash, get_new_and_missing, find_file
 from morenines.output import success, warning, error, print_filelists
 
 
+pass_repository = click.make_pass_decorator(Repository, ensure=True)
+
+DEFAULT_PATH = os.getcwd()
+
+def repo_path_callback(ctx, param, value):
+    repo = ctx.ensure_object(Repository)
+    if value:
+        repo.open(value)
+    else:
+        repo.open(DEFAULT_PATH)
+    return value
+
+
 _common_params = {
+    'new_repo_path' : click.argument("repo_path", required=False, default=DEFAULT_PATH, type=click.Path(resolve_path=True)),
+    'repo_path': click.argument("repo_path", expose_value=False, required=False, callback=repo_path_callback, type=click.Path(resolve_path=True)),
     'ignored': click.option('-i', '--ignored/--no-ignored', 'show_ignored', default=False, help="Enable/disable showing files ignored by the ignores patterns."),
     'color': click.option('--color/--no-color', 'show_color', default=True, help="Enable/disable colorized output."),
 }
-
 
 def common_params(*param_names):
     def real_decorator(func):
@@ -24,21 +38,6 @@ def common_params(*param_names):
     return real_decorator
 
 
-pass_repository = click.make_pass_decorator(Repository, ensure=True)
-
-DEFAULT_PATH = os.getcwd()
-
-def repo_path_argument(func):
-    def repo_path_callback(ctx, param, value):
-        repo = ctx.ensure_object(Repository)
-        if value:
-            repo.open(value)
-        else:
-            repo.open(DEFAULT_PATH)
-        return value
-    return click.argument("repo_path", expose_value=False, required=False, callback=repo_path_callback, type=click.Path(resolve_path=True))(func)
-
-
 @click.group()
 def main():
     """A tool to track whether the content of files has changed."""
@@ -46,7 +45,7 @@ def main():
 
 
 @main.command(short_help="Initialize a new morenines repository")
-@click.argument("repo_path", required=False, default=DEFAULT_PATH, type=click.Path(resolve_path=True))
+@common_params('new_repo_path')
 @click.pass_context
 def init(ctx, repo_path):
     repo = Repository()
@@ -59,7 +58,7 @@ def init(ctx, repo_path):
 
 
 @main.command(short_help="Write a new index file")
-@repo_path_argument
+@common_params('repo_path')
 @pass_repository
 def create(repo):
     """Write a new index file with the hashes of files under it."""
@@ -75,7 +74,7 @@ def create(repo):
 
 
 @main.command(short_help="Update an existing index file")
-@repo_path_argument
+@common_params('repo_path')
 @pass_repository
 @click.option('--remove-missing/--no-remove-missing', default=False, help="Delete any the hashes of any files in the index that no longer exist.")
 def update(repo, remove_missing):
@@ -92,9 +91,8 @@ def update(repo, remove_missing):
 
 
 @main.command(short_help="Show new, missing or ignored files")
-@common_params('ignored', 'color')
+@common_params('repo_path', 'ignored', 'color')
 @click.option('--verify/--no-verify', default=False, help="Re-hash all files in index and check for changes")
-@repo_path_argument
 @pass_repository
 @click.pass_context
 def status(ctx, repo, show_ignored, show_color, verify):
@@ -119,7 +117,7 @@ def status(ctx, repo, show_ignored, show_color, verify):
 
 
 @main.command(name='edit-ignores', short_help="Open the ignores file in an editor")
-@repo_path_argument
+@common_params('repo_path')
 @pass_repository
 def edit_ignores(repo):
     """Open an existing or a new ignores file in an editor."""
