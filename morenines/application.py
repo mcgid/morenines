@@ -8,15 +8,8 @@ from morenines.repository import Repository
 from morenines.util import get_files, get_hash, get_new_and_missing, find_file
 from morenines.output import success, warning, error, print_filelists
 
-_path_type = {
-    'file':click.Path(file_okay=True, dir_okay=False, resolve_path=True),
-    'existing file':click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
-    'new file':click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True),
-    'existing dir':click.Path(exists=True, file_okay=False, dir_okay=True, resolve_path=True),
-}
 
 _common_params = {
-    'index': click.argument('index_file', required=False, type=_path_type['file']),
     'ignored': click.option('-i', '--ignored/--no-ignored', 'show_ignored', default=False, help="Enable/disable showing files ignored by the ignores patterns."),
     'color': click.option('--color/--no-color', 'show_color', default=True, help="Enable/disable colorized output."),
 }
@@ -30,83 +23,6 @@ def common_params(*param_names):
 
     return real_decorator
 
-
-class MNContext(object):
-    def __init__(self, config, index, ignores):
-        self.config = config
-        self.index = index
-        self.ignores = ignores
-
-
-def get_index_path(config):
-    if 'index_path' in config:
-        return config['index_path']
-    else:
-        return find_file(config['default_index_filename'])
-
-
-def get_ignores_path(config):
-    if 'ignores_file' in config:
-        path = config['ignores_file']
-    elif 'root_path' in config:
-        path = os.path.join(config['root_path'], config['default_ignores_filename'])
-    else:
-        return None
-
-    if os.path.isfile(path):
-        return path
-    else:
-        return None
-
-
-def get_default_config(cwd):
-    INDEX_FILENAME = '.mnindex'
-    IGNORES_FILENAME = '.mnignore'
-
-    default_config = {
-        'default_index_filename': INDEX_FILENAME,
-        'default_ignores_filename': IGNORES_FILENAME,
-        'default_index_path': os.path.join(cwd, INDEX_FILENAME),
-        'default_ignores_path': os.path.join(cwd, IGNORES_FILENAME),
-    }
-
-    return default_config
-
-
-def get_context(index_path, index_required=True):
-    config = get_default_config(os.getcwd())
-
-    if index_path:
-        config['index_path'] = index_path
-
-    index_path = get_index_path(config)
-
-    if index_path:
-        config['index_path'] = index_path
-
-        index = Index.read(index_path)
-
-        config['root_path'] = index.root_path
-        config['ignores_file'] = index.ignores_file
-    elif not index_path and index_required:
-        error("Cannot find index file '{}' in this or any parent dir".format(config['default_index_filename']))
-        # XXX XXX TODO write util.abort() or something, to exit centrally
-        sys.exit(1)
-    else:
-        config['index_path'] = config['default_index_path']
-        index = None
-
-    ignores_path = get_ignores_path(config)
-
-    if ignores_path:
-        config['ignores_file'] = ignores_path
-
-        ignores = Ignores.read(ignores_path)
-    else:
-        config['ignores_file'] = config['default_ignores_path']
-        ignores = Ignores()
-
-    return MNContext(config, index, ignores)
 
 pass_repository = click.make_pass_decorator(Repository, ensure=True)
 
