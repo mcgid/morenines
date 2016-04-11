@@ -159,39 +159,20 @@ def create(repo):
 
 
 @main.command(short_help="Update an existing index file")
-@common_params('index')
+@repo_path_argument
+@pass_repository
 @click.option('--remove-missing/--no-remove-missing', default=False, help="Delete any the hashes of any files in the index that no longer exist.")
-@click.option('--new-root', 'new_root', type=_path_type['existing dir'], help="New location of the root directory.")
-@click.option('--new-ignores-file', type=_path_type['existing file'], help="New location of the ignores file.")
-@click.option('-o', '--output', 'output_path', type=_path_type['file'], help="The path where the updated index file should be written.")
-def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
+def update(repo, remove_missing):
     """Update an existing index file with new file hashes, missing files removed, etc."""
-    context = get_context(index_file)
+    new_files, missing_files, ignored_files = get_new_and_missing(repo.index, repo.ignore)
 
-    if new_root:
-        context.index.root_path = new_root
-
-    # Just update the ignores file header, without trying to read that new file
-    # This seems least surprising, since we're creating the new index based on
-    # the current one, and the current one is influenced by the current ignores file.
-    if new_ignores_file:
-        context.index.ignores_file = new_ignores_file
-
-    new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores)
-
-    context.index.add(new_files)
+    repo.index.add(new_files)
 
     if remove_missing is True:
-        context.index.remove(missing_files)
+        repo.index.remove(missing_files)
 
-    if output_path:
-        if os.path.basename(output_path) == '-':
-            output_path = '-'
-    else:
-        output_path = context.config['index_path']
-
-    with click.open_file(output_path, mode='w') as stream:
-        context.index.write(stream)
+    with click.open_file(repo.index_path, mode='w') as stream:
+        repo.index.write(stream)
 
 
 @main.command(short_help="Show new, missing or ignored files")
