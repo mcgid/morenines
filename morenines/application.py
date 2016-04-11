@@ -143,33 +143,19 @@ def init(ctx, repo_path):
 
 
 @main.command(short_help="Write a new index file")
-@click.option('--ignores-file', 'ignores_path', type=_path_type['existing file'], help="The path to an existing ignores file.")
-@click.option('-o', '--output', 'output_path', type=_path_type['new file'], help="The path where the index file should be written.")
-@click.argument('root_path', required=True, default=os.getcwd(), type=_path_type['existing dir'])
-def create(ignores_path, root_path, output_path):
-    context = get_context(None, index_required=False)
-
+@repo_path_argument
+@pass_repository
+def create(repo):
     """Write a new index file with the hashes of files under it."""
-    if output_path:
-        if os.path.basename(output_path) == '-':
-            output_path = '-'
-        elif os.path.exists(output_path):
-            error("Index file {} already exists".format(output_path))
-            error("(To update an existing index file, use the 'update' command)")
-            sys.exit(1)
-    else:
-        output_path = context.config['index_path']
 
-    index = Index(root_path, ignores_path)
+    files, ignored = get_files(repo.path, repo.ignore)
 
-    files, ignored = get_files(index.root_path, context.ignores)
+    repo.index.add(files)
 
-    index.add(files)
+    with click.open_file(repo.index_path, mode='w') as stream:
+        repo.index.write(stream)
 
-    with click.open_file(output_path, mode='w') as stream:
-        index.write(stream)
-
-    success('Wrote index file {}'.format(output_path))
+    success('Wrote index file {}'.format(repo.index_path))
 
 
 @main.command(short_help="Update an existing index file")
