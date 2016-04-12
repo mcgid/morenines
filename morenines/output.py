@@ -26,6 +26,8 @@ def output(message, color=None, items=[]):
 
     clear_output_color()
 
+def info(message, items=[]):
+    output(message, None, items)
 
 def success(message, items=[]):
     output("SUCCESS: " + message, GOOD_COLOR, items)

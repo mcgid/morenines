@@ -6,7 +6,7 @@ from morenines.index import Index
 from morenines.ignores import Ignores
 from morenines.repository import Repository
 from morenines.util import get_files, get_hash, get_new_and_missing, find_file
-from morenines.output import success, warning, error, print_filelists
+from morenines.output import info, success, warning, error, print_filelists
 
 
 pass_repository = click.make_pass_decorator(Repository, ensure=True)
@@ -76,18 +76,26 @@ def create(repo):
 @main.command(short_help="Update an existing index file")
 @common_params('repo_path')
 @pass_repository
+@click.option('--add-new/--no-add-new', default=False, help="Hash and add any files that aren't in the index")
 @click.option('--remove-missing/--no-remove-missing', default=False, help="Delete any the hashes of any files in the index that no longer exist.")
-def update(repo, remove_missing):
+def update(repo, add_new, remove_missing):
     """Update an existing index file with new file hashes, missing files removed, etc."""
     new_files, missing_files, ignored_files = get_new_and_missing(repo)
 
-    repo.index.add(new_files)
+    if add_new:
+        repo.index.add(new_files)
 
     if remove_missing is True:
         repo.index.remove(missing_files)
 
-    with click.open_file(repo.index_path, mode='w') as stream:
-        repo.index.write(stream)
+    if not any([new_files, missing_files]):
+        info("Index is up-to-date (no new or missing files)")
+    elif add_new or remove_missing:
+        with click.open_file(repo.index_path, mode='w') as stream:
+            repo.index.write(stream)
+        success("Wrote index file {}".format(repo.index_path))
+    else:
+        warning("No action taken (use '--add-new' or '--remove-missing' to change the index)")
 
 
 @main.command(short_help="Show new, missing or ignored files")
