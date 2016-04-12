@@ -1,5 +1,10 @@
 import os
+import sys
 import hashlib
+
+def abort():
+    """Stop exectution and return nonzero error code"""
+    sys.exit(1)
 
 
 def get_files(root_path, ignores, save_ignored_paths=False):
@@ -61,11 +66,11 @@ def get_hash(path):
     return h.hexdigest()
 
 
-def get_new_and_missing(index, ignores, include_ignored=False):
-    current_files, ignored_files = get_files(index.root_path, ignores, include_ignored)
+def get_new_and_missing(repo, include_ignored=False):
+    current_files, ignored_files = get_files(repo.path, repo.ignore, include_ignored)
 
-    new_files = [path for path in current_files if path not in index.files]
+    new_files = [path for path in current_files if path not in repo.index.files]
 
-    missing_files = [path for path in index.files.iterkeys() if path not in current_files]
+    missing_files = [path for path in repo.index.files.iterkeys() if path not in current_files]
 
     return new_files, missing_files, ignored_files
