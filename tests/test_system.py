@@ -28,45 +28,27 @@ def data_dir(request, tmpdir, module_dir):
     return dest_path.strpath
 
 
-
-@pytest.fixture
-def example_dir(module_dir, tmpdir):
-    dest_path = tmpdir.join(os.path.basename(module_dir))
-
-    data_dir = os.path.join(module_dir, "data0")
-
-    shutil.copytree(data_dir, dest_path.strpath)
-
-    return dest_path.strpath
-    
-
-def test_init(example_dir):
+def test_init(data_dir):
     runner = CliRunner()
 
-    result = runner.invoke(application.main, ['init', example_dir])
+    result = runner.invoke(application.main, ['init', data_dir])
 
-    mn_dir = os.path.join(example_dir, '.morenines')
+    mn_dir = os.path.join(data_dir, '.morenines')
 
     assert os.path.isdir(mn_dir) == True
 
 
-def test_create(module_dir, example_dir):
-    # Prepare the environment
-    result_mn_dir = os.path.join(example_dir, ".morenines")
-    os.mkdir(result_mn_dir)
-
-    # Run it
+def test_create(module_dir, data_dir):
     runner = CliRunner()
-    result = runner.invoke(application.main, ['create', example_dir])
+    result = runner.invoke(application.main, ['create', data_dir])
 
     # Prepare for checks
-    result_index_path = os.path.join(result_mn_dir, 'index')
+    result_index_path = os.path.join(data_dir, '.morenines', 'index')
 
     assert os.path.isfile(result_index_path)
 
     with open(result_index_path) as f:
         result_index = [line for line in f.readlines() if not line.startswith("date: ")]
-
 
     premade_index_path = os.path.join(module_dir, "index-after_create")
 
