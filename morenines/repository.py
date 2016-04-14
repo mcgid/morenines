@@ -35,7 +35,7 @@ class Repository(object):
 
         self.init_paths(path)
 
-        self.index = Index(self)
+        self.index = Index(self.path)
 
         self.ignore = Ignores()
 
@@ -58,7 +58,7 @@ class Repository(object):
 
         self.init_paths(repo_path)
 
-        self.index = Index(self)
+        self.index = Index(self.path)
 
         if os.path.isfile(self.index_path):
             self.index.read(self.index_path)

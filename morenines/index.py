@@ -20,8 +20,8 @@ class Index(object):
         if version != str(cls.reader_version):
             raise Exception("Unsupported file format version: file is {}, parser is {}".format(version, cls.reader_version))
 
-    def __init__(self, repo):
-        self.repo = repo
+    def __init__(self, path_prefix):
+        self.path_prefix = path_prefix
         self.files = collections.OrderedDict()
 
     def read(self, path):
@@ -35,7 +35,7 @@ class Index(object):
     def add(self, paths):
         for path in paths:
             # To hash the file, we need its absolute path
-            abs_path = os.path.join(self.repo.path, path)
+            abs_path = os.path.join(self.path_prefix, path)
 
             # We store the relative path in the index, not the absolute
             self.files[path] = get_hash(abs_path)
