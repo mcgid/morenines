@@ -5,7 +5,7 @@ import sys
 from morenines.index import Index
 from morenines.ignores import Ignores
 from morenines.repository import Repository
-from morenines.util import get_files, get_hash, get_new_and_missing, find_file
+from morenines.util import get_files, get_hash, get_new_and_missing, abort
 from morenines.output import info, success, warning, error, print_filelists
 
 
@@ -62,6 +62,11 @@ def init(ctx, repo_path):
 @pass_repository
 def create(repo):
     """Write a new index file with the hashes of files under it."""
+
+    if os.path.isfile(repo.index_path):
+        error("Index file already exists: {}".format(repo.index_path))
+        error("(To update an existing index, use the 'update' command)")
+        abort()
 
     files, ignored = get_files(repo.path, repo.ignore)
 

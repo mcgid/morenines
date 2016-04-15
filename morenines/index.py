@@ -3,7 +3,7 @@ import collections
 import datetime
 import click
 
-from morenines.util import get_hash, find_file
+from morenines.util import get_hash
 
 
 class Index(object):
