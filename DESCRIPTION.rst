@@ -9,6 +9,6 @@ Basic usage looks like this::
     $ mn create
     $ mn verify
 
-You can find more details on teh `project page`_.
+You can find more details on the `project page`_.
 
 .. _project page: https://github.com/mcgid/morenines

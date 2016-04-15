@@ -42,7 +42,7 @@ Changed files (hash differs from index):
 ## Full List of Options
 ```bash
 $ mn  --help
-Usage: mn [OPTIONS] COMMAND [ARGS]...
+Usage: __main__.py [OPTIONS] COMMAND [ARGS]...
 
   A tool to track whether the content of files has changed.
 
@@ -52,32 +52,34 @@ Options:
 Commands:
   create        Write a new index file
   edit-ignores  Open the ignores file in an editor
+  init          Initialize a new morenines repository
   status        Show new, missing or ignored files
   update        Update an existing index file
-  verify        Re-hash all index files to show any changes
+```
 
+```bash
 $ mn create --help
-Usage: mn create [OPTIONS] ROOT_PATH
+Usage: __main__.py create [OPTIONS] [REPO_PATH]
 
   Write a new index file with the hashes of files under it.
 
 Options:
-  --ignores-file PATH  The path to an existing ignores file.
-  -o, --output PATH    The path where the index file should be written.
-  --help               Show this message and exit.
+  --help  Show this message and exit.
+```
 
+```bash
 $ mn edit-ignores --help
-Usage: mn edit-ignores [OPTIONS]
+Usage: __main__.py edit-ignores [OPTIONS] [REPO_PATH]
 
   Open an existing or a new ignores file in an editor.
 
 Options:
-  --ignores-file PATH  The path to an existing ignores file, or the path to
-                       which a new ignores file should be written.
-  --help               Show this message and exit.
+  --help  Show this message and exit.
+```
 
+```bash
 $ mn status --help
-Usage: mn status [OPTIONS] [INDEX_FILE]
+Usage: __main__.py status [OPTIONS] [REPO_PATH]
 
   Show any new files not in the index, index files that are missing, or
   ignored files.
@@ -86,33 +88,23 @@ Options:
   --color / --no-color          Enable/disable colorized output.
   -i, --ignored / --no-ignored  Enable/disable showing files ignored by the
                                 ignores patterns.
+  --verify / --no-verify        Re-hash all files in index and check for
+                                changes
   --help                        Show this message and exit.
+```
 
+```bash
 $ mn update --help
-Usage: mn update [OPTIONS] [INDEX_FILE]
+Usage: __main__.py update [OPTIONS] [REPO_PATH]
 
   Update an existing index file with new file hashes, missing files removed,
   etc.
 
 Options:
+  --add-new / --no-add-new        Hash and add any files that aren't in the
+                                  index
   --remove-missing / --no-remove-missing
                                   Delete any the hashes of any files in the
                                   index that no longer exist.
-  --new-root DIRECTORY            New location of the root directory.
-  --new-ignores-file PATH         New location of the ignores file.
-  -o, --output PATH               The path where the updated index file should
-                                  be written.
   --help                          Show this message and exit.
-
-$ mn verify --help
-Usage: mn verify [OPTIONS] [INDEX_FILE]
-
-  Re-hash all files in the index and compare the index and current
-  checksums.
-
-Options:
-  --color / --no-color          Enable/disable colorized output.
-  -i, --ignored / --no-ignored  Enable/disable showing files ignored by the
-                                ignores patterns.
-  --help                        Show this message and exit.
 ```

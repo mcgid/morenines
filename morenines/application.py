@@ -115,7 +115,7 @@ def status(ctx, repo, show_ignored, show_color, verify):
     changed_files = []
 
     if verify:
-        for path, old_hash in repo.index.files.iteritems():
+        for path, old_hash in repo.index.files.items():
             if path in missing_files:
                 continue
 
