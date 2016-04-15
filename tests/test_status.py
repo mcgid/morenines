@@ -72,3 +72,27 @@ def test_status_missing_file_no_color(data_dir):
     expected_output = u"Missing files:\n  2012/file_to_del.txt\n"
 
     assert result.output == expected_output
+
+
+def test_status_ignored_file_with_color(data_dir):
+    runner = CliRunner()
+    result = runner.invoke(application.main, ['status', '--ignored', data_dir])
+
+    assert result.exit_code == 0
+
+    # Result output is unicode, so we need a unicode string literal
+    expected_output = u"\033[34mIgnored files and directories:\n  .morenines/\n  2012/file_to_ignore.txt\n\033[0m"
+
+    assert result.output == expected_output
+
+
+def test_status_ignored_file_no_color(data_dir):
+    runner = CliRunner()
+    result = runner.invoke(application.main, ['status', '--ignored', '--no-color', data_dir])
+
+    assert result.exit_code == 0
+
+    # Result output is unicode, so we need a unicode string literal
+    expected_output = u"Ignored files and directories:\n  .morenines/\n  2012/file_to_ignore.txt\n"
+
+    assert result.output == expected_output
