@@ -66,7 +66,7 @@ def create(repo):
     if os.path.isfile(repo.index_path):
         error("Index file already exists: {}".format(repo.index_path))
         error("(To update an existing index, use the 'update' command)")
-        util.abort()
+        abort()
 
     files, ignored = get_files(repo.path, repo.ignore)
 
