@@ -58,6 +58,6 @@ def get_new_and_missing(repo, include_ignored=False):
 
     new_files = [path for path in current_files if path not in repo.index.files]
 
-    missing_files = [path for path in repo.index.files.iterkeys() if path not in current_files]
+    missing_files = [path for path in repo.index.files.keys() if path not in current_files]
 
     return new_files, missing_files, ignored_files
