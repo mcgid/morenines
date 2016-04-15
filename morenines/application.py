@@ -4,22 +4,30 @@ import sys
 
 from morenines.index import Index
 from morenines.ignores import Ignores
-from morenines.util import get_files, get_hash, get_new_and_missing, find_file
-from morenines.output import success, warning, error, print_filelists
+from morenines.repository import Repository
+from morenines.util import get_files, get_hash, get_new_and_missing, abort
+from morenines.output import info, success, warning, error, print_filelists
 
-_path_type = {
-    'file':click.Path(file_okay=True, dir_okay=False, resolve_path=True),
-    'existing file':click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
-    'new file':click.Path(exists=False, file_okay=True, dir_okay=False, resolve_path=True),
-    'existing dir':click.Path(exists=True, file_okay=False, dir_okay=True, resolve_path=True),
-}
+
+pass_repository = click.make_pass_decorator(Repository, ensure=True)
+
+DEFAULT_PATH = os.getcwd()
+
+def repo_path_callback(ctx, param, value):
+    repo = ctx.ensure_object(Repository)
+    if value:
+        repo.open(value)
+    else:
+        repo.open(DEFAULT_PATH)
+    return value
+
 
 _common_params = {
-    'index': click.argument('index_file', required=False, type=_path_type['file']),
+    'new_repo_path' : click.argument("repo_path", required=False, default=DEFAULT_PATH, type=click.Path(resolve_path=True)),
+    'repo_path': click.argument("repo_path", expose_value=False, required=False, callback=repo_path_callback, type=click.Path(resolve_path=True)),
     'ignored': click.option('-i', '--ignored/--no-ignored', 'show_ignored', default=False, help="Enable/disable showing files ignored by the ignores patterns."),
     'color': click.option('--color/--no-color', 'show_color', default=True, help="Enable/disable colorized output."),
 }
-
 
 def common_params(*param_names):
     def real_decorator(func):
@@ -30,189 +38,91 @@ def common_params(*param_names):
     return real_decorator
 
 
-class MNContext(object):
-    def __init__(self, config, index, ignores):
-        self.config = config
-        self.index = index
-        self.ignores = ignores
-
-
-def get_index_path(config):
-    if 'index_path' in config:
-        return config['index_path']
-    else:
-        return find_file(config['default_index_filename'])
-
-
-def get_ignores_path(config):
-    if 'ignores_file' in config:
-        path = config['ignores_file']
-    elif 'root_path' in config:
-        path = os.path.join(config['root_path'], config['default_ignores_filename'])
-    else:
-        return None
-
-    if os.path.isfile(path):
-        return path
-    else:
-        return None
-
-
-def get_default_config(cwd):
-    INDEX_FILENAME = '.mnindex'
-    IGNORES_FILENAME = '.mnignore'
-
-    default_config = {
-        'default_index_filename': INDEX_FILENAME,
-        'default_ignores_filename': IGNORES_FILENAME,
-        'default_index_path': os.path.join(cwd, INDEX_FILENAME),
-        'default_ignores_path': os.path.join(cwd, IGNORES_FILENAME),
-    }
-
-    return default_config
-
-
-def get_context(index_path, index_required=True):
-    config = get_default_config(os.getcwd())
-
-    if index_path:
-        config['index_path'] = index_path
-
-    index_path = get_index_path(config)
-
-    if index_path:
-        config['index_path'] = index_path
-
-        index = Index.read(index_path)
-
-        config['root_path'] = index.root_path
-        config['ignores_file'] = index.ignores_file
-    elif not index_path and index_required:
-        error("Cannot find index file '{}' in this or any parent dir".format(config['default_index_filename']))
-        # XXX XXX TODO write util.abort() or something, to exit centrally
-        sys.exit(1)
-    else:
-        config['index_path'] = config['default_index_path']
-        index = None
-
-    ignores_path = get_ignores_path(config)
-
-    if ignores_path:
-        config['ignores_file'] = ignores_path
-
-        ignores = Ignores.read(ignores_path)
-    else:
-        config['ignores_file'] = config['default_ignores_path']
-        ignores = Ignores()
-
-    return MNContext(config, index, ignores)
-
-
 @click.group()
 def main():
     """A tool to track whether the content of files has changed."""
     pass
 
 
+@main.command(short_help="Initialize a new morenines repository")
+@common_params('new_repo_path')
+@click.pass_context
+def init(ctx, repo_path):
+    repo = Repository()
+
+    repo.create(repo_path)
+
+    ctx.obj = repo
+
+    success("Initialized empty morenines repository in {}".format(repo.mn_dir_path))
+
+
 @main.command(short_help="Write a new index file")
-@click.option('--ignores-file', 'ignores_path', type=_path_type['existing file'], help="The path to an existing ignores file.")
-@click.option('-o', '--output', 'output_path', type=_path_type['new file'], help="The path where the index file should be written.")
-@click.argument('root_path', required=True, default=os.getcwd(), type=_path_type['existing dir'])
-def create(ignores_path, root_path, output_path):
-    context = get_context(None, index_required=False)
-
+@common_params('repo_path')
+@pass_repository
+def create(repo):
     """Write a new index file with the hashes of files under it."""
-    if output_path:
-        if os.path.basename(output_path) == '-':
-            output_path = '-'
-        elif os.path.exists(output_path):
-            error("Index file {} already exists".format(output_path))
-            error("(To update an existing index file, use the 'update' command)")
-            sys.exit(1)
-    else:
-        output_path = context.config['index_path']
 
-    index = Index(root_path, ignores_path)
+    if os.path.isfile(repo.index_path):
+        error("Index file already exists: {}".format(repo.index_path))
+        error("(To update an existing index, use the 'update' command)")
+        abort()
 
-    files, ignored = get_files(index.root_path, context.ignores)
+    files, ignored = get_files(repo.path, repo.ignore)
 
-    index.add(files)
+    repo.index.add(files)
 
-    with click.open_file(output_path, mode='w') as stream:
-        index.write(stream)
+    with click.open_file(repo.index_path, mode='w') as stream:
+        repo.index.write(stream)
 
-    success('Wrote index file {}'.format(output_path))
+    success('Wrote index file {}'.format(repo.index_path))
 
 
 @main.command(short_help="Update an existing index file")
-@common_params('index')
+@common_params('repo_path')
+@pass_repository
+@click.option('--add-new/--no-add-new', default=False, help="Hash and add any files that aren't in the index")
 @click.option('--remove-missing/--no-remove-missing', default=False, help="Delete any the hashes of any files in the index that no longer exist.")
-@click.option('--new-root', 'new_root', type=_path_type['existing dir'], help="New location of the root directory.")
-@click.option('--new-ignores-file', type=_path_type['existing file'], help="New location of the ignores file.")
-@click.option('-o', '--output', 'output_path', type=_path_type['file'], help="The path where the updated index file should be written.")
-def update(index_file, remove_missing, new_root, new_ignores_file, output_path):
+def update(repo, add_new, remove_missing):
     """Update an existing index file with new file hashes, missing files removed, etc."""
-    context = get_context(index_file)
+    new_files, missing_files, ignored_files = get_new_and_missing(repo)
 
-    if new_root:
-        context.index.root_path = new_root
-
-    # Just update the ignores file header, without trying to read that new file
-    # This seems least surprising, since we're creating the new index based on
-    # the current one, and the current one is influenced by the current ignores file.
-    if new_ignores_file:
-        context.index.ignores_file = new_ignores_file
-
-    new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores)
-
-    context.index.add(new_files)
+    if add_new:
+        repo.index.add(new_files)
 
     if remove_missing is True:
-        context.index.remove(missing_files)
+        repo.index.remove(missing_files)
 
-    if output_path:
-        if os.path.basename(output_path) == '-':
-            output_path = '-'
+    if not any([new_files, missing_files]):
+        info("Index is up-to-date (no new or missing files)")
+    elif add_new or remove_missing:
+        with click.open_file(repo.index_path, mode='w') as stream:
+            repo.index.write(stream)
+        success("Wrote index file {}".format(repo.index_path))
     else:
-        output_path = context.config['index_path']
-
-    with click.open_file(output_path, mode='w') as stream:
-        context.index.write(stream)
+        warning("No action taken (use '--add-new' or '--remove-missing' to change the index)")
 
 
 @main.command(short_help="Show new, missing or ignored files")
-@common_params('index', 'ignored', 'color')
+@common_params('repo_path', 'ignored', 'color')
+@click.option('--verify/--no-verify', default=False, help="Re-hash all files in index and check for changes")
+@pass_repository
 @click.pass_context
-def status(ctx, index_file, show_ignored, show_color):
+def status(ctx, repo, show_ignored, show_color, verify):
     """Show any new files not in the index, index files that are missing, or ignored files."""
-    context = get_context(index_file)
-
-    new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores, show_ignored)
-
-    ctx.color = show_color
-
-    print_filelists(new_files, None, missing_files, ignored_files)
-
-
-@main.command(short_help="Re-hash all index files to show any changes")
-@common_params('index', 'ignored', 'color')
-@click.pass_context
-def verify(ctx, index_file, show_ignored, show_color):
-    """Re-hash all files in the index and compare the index and current checksums."""
-    context = get_context(index_file)
-
-    new_files, missing_files, ignored_files = get_new_and_missing(context.index, context.ignores, show_ignored)
+    new_files, missing_files, ignored_files = get_new_and_missing(repo, show_ignored)
 
     changed_files = []
 
-    for path, old_hash in context.index.files.iteritems():
-        if path in missing_files:
-            continue
+    if verify:
+        for path, old_hash in repo.index.files.iteritems():
+            if path in missing_files:
+                continue
 
-        current_hash = get_hash(os.path.join(context.index.root_path, path))
+            current_hash = get_hash(os.path.join(repo.path, path))
 
-        if current_hash != old_hash:
-            changed_files.append(path)
+            if current_hash != old_hash:
+                changed_files.append(path)
 
     ctx.color = show_color
 
@@ -220,17 +130,13 @@ def verify(ctx, index_file, show_ignored, show_color):
 
 
 @main.command(name='edit-ignores', short_help="Open the ignores file in an editor")
-@click.option('--ignores-file', 'ignores_path', type=_path_type['file'], help="The path to an existing ignores file, or the path to which a new ignores file should be written.")
-def edit_ignores(ignores_path):
+@common_params('repo_path')
+@pass_repository
+def edit_ignores(repo):
     """Open an existing or a new ignores file in an editor."""
-    context = get_context(None, index_required=False)
 
-    if 'ignores_file' in context.config:
-        path = context.config['ignores_file']
-    else:
-        path = context.config['default_ignores_file']
+    click.edit(filename=repo.ignore_path)
 
-    click.edit(filename=path)
 
 if __name__ == '__main__':
     main()

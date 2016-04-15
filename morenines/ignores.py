@@ -4,18 +4,13 @@ import click
 
 
 class Ignores(object):
-    @classmethod
-    def read(cls, path):
-        ignores = cls()
+    def __init__(self, default_patterns=[]):
+        self.patterns = default_patterns
 
-        with click.open_file(path, 'r') as stream:
-            ignores.patterns = [line.strip() for line in stream]
-
-        return ignores
+    def read(self, path):
+        with open(path, 'r') as stream:
+            self.patterns.extend([line.strip() for line in stream])
     
-    def __init__(self):
-        self.patterns = []
-
     def match(self, path):
         filename = os.path.basename(path)
 

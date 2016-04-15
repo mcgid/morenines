@@ -1,5 +1,10 @@
 import os
+import sys
 import hashlib
+
+def abort():
+    """Stop exectution and return nonzero error code"""
+    sys.exit(1)
 
 
 def get_files(root_path, ignores, save_ignored_paths=False):
@@ -28,19 +33,6 @@ def get_files(root_path, ignores, save_ignored_paths=False):
     return paths, ignored
 
 
-def find_file(name, starting_dir=os.getcwd()):
-    path = os.path.join(starting_dir, name)
-
-    if os.path.isfile(path):
-        return path
-
-    if starting_dir == '/':
-        return None
-
-    # Remove the last dir in path and call recursively, to look in parent dir
-    return find_file(name, os.path.split(starting_dir)[0])
-
-
 def rel_paths_iter(names, parent_dir_path, root_path):
     for name in names:
         # We want the full path of the file/dir, not its name
@@ -61,11 +53,11 @@ def get_hash(path):
     return h.hexdigest()
 
 
-def get_new_and_missing(index, ignores, include_ignored=False):
-    current_files, ignored_files = get_files(index.root_path, ignores, include_ignored)
+def get_new_and_missing(repo, include_ignored=False):
+    current_files, ignored_files = get_files(repo.path, repo.ignore, include_ignored)
 
-    new_files = [path for path in current_files if path not in index.files]
+    new_files = [path for path in current_files if path not in repo.index.files]
 
-    missing_files = [path for path in index.files.iterkeys() if path not in current_files]
+    missing_files = [path for path in repo.index.files.iterkeys() if path not in current_files]
 
     return new_files, missing_files, ignored_files

@@ -3,7 +3,7 @@ import collections
 import datetime
 import click
 
-from morenines.util import get_hash, find_file
+from morenines.util import get_hash
 
 
 class Index(object):
@@ -20,31 +20,22 @@ class Index(object):
         if version != str(cls.reader_version):
             raise Exception("Unsupported file format version: file is {}, parser is {}".format(version, cls.reader_version))
 
-    @classmethod
-    def read(cls, path):
+    def __init__(self, path_prefix):
+        self.path_prefix = path_prefix
+        self.files = collections.OrderedDict()
+
+    def read(self, path):
         with click.open_file(path, 'r') as stream:
             headers = parse_headers(stream)
 
-            cls._check_version(headers)
+            self._check_version(headers)
 
-            index = cls(headers['root_path'])
-
-            if 'ignores_file' in headers:
-                index.ignores_file = headers['ignores_file']
-
-            index.files = parse_files(stream)
-
-            return index
-
-    def __init__(self, root_path, ignores_file=None):
-        self.root_path = root_path
-        self.ignores_file = ignores_file
-        self.files = collections.OrderedDict()
+            self.files = parse_files(stream)
 
     def add(self, paths):
         for path in paths:
             # To hash the file, we need its absolute path
-            abs_path = os.path.join(self.root_path, path)
+            abs_path = os.path.join(self.path_prefix, path)
 
             # We store the relative path in the index, not the absolute
             self.files[path] = get_hash(abs_path)
@@ -56,12 +47,8 @@ class Index(object):
     def write(self, stream):
         headers = [
             ('version', self.reader_version),
-            ('root_path', self.root_path),
             ('date', datetime.datetime.utcnow().isoformat()),
         ]
-
-        if self.ignores_file:
-            headers.append(('ignores_file', self.ignores_file))
 
         for key, value in headers:
             stream.write("{}: {}\n".format(key, value))
