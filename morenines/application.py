@@ -5,7 +5,7 @@ import sys
 from morenines.index import Index
 from morenines.ignores import Ignores
 from morenines.repository import Repository
-from morenines.util import get_files, get_hash, get_new_and_missing, find_file, abort
+from morenines.util import get_files, get_hash, get_new_and_missing, abort
 from morenines.output import info, success, warning, error, print_filelists
 
 
