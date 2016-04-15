@@ -13,18 +13,23 @@ NAMES = {
     'ignore': 'ignore',
 }
 
+DEFAULT_IGNORE_PATTERNS = [
+    NAMES['mn_dir'],
+]
 
 class Repository(object):
-    def __init__(self):
-        self.path = None
-        self.index = None
-        self.ignore = None
+    # Since click will try to instantiate this class for us with no args, we
+    # put the __init__ code here instead
+    def init(self, path):
+        self.path = path
+        self.index = Index(path)
+        self.ignore = Ignores(DEFAULT_IGNORE_PATTERNS)
 
-    def init_paths(self, repo_path):
-        self.path = repo_path
+        # Other paths
         self.mn_dir_path = os.path.join(self.path, NAMES['mn_dir'])
         self.index_path = os.path.join(self.mn_dir_path, NAMES['index'])
         self.ignore_path = os.path.join(self.mn_dir_path, NAMES['ignore'])
+
 
     def create(self, path):
         repo_path = find_repo(path)
@@ -33,11 +38,7 @@ class Repository(object):
             output.error("Repository already exists: {}".format(repo_path))
             util.abort()
 
-        self.init_paths(path)
-
-        self.index = Index(self.path)
-
-        self.ignore = Ignores()
+        self.init(path)
 
         os.mkdir(self.mn_dir_path)
 
@@ -56,17 +57,13 @@ class Repository(object):
             output.error("Cannot find repository in '{}' or any parent dir".format(path))
             util.abort()
 
-        self.init_paths(repo_path)
-
-        self.index = Index(self.path)
+        self.init(repo_path)
 
         if os.path.isfile(self.index_path):
             self.index.read(self.index_path)
 
         if os.path.isfile(self.ignore_path):
-            self.ignore = Ignores.read(self.ignore_path)
-        else:
-            self.ignore = Ignores()
+            self.ignore.read(self.ignore_path)
 
 
 def find_repo(start_path):
