@@ -1,6 +1,8 @@
 import os
 from click.testing import CliRunner
 
+from conftest import read_index
+
 from morenines import application
 
 
@@ -10,18 +12,9 @@ def test_create(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    # Prepare for checks
-    result_index_path = os.path.join(data_dir, '.morenines', 'index')
+    result_index = read_index(data_dir)
 
-    assert os.path.isfile(result_index_path)
-
-    with open(result_index_path) as f:
-        result_index = [line for line in f.readlines() if not line.startswith("date: ")]
-
-    expected_index_path = os.path.join(expected_dir, '.morenines', 'index')
-
-    with open(expected_index_path) as f:
-        expected_index = f.readlines()
+    expected_index = read_index(expected_dir)
 
     assert result_index == expected_index
 
@@ -32,18 +25,9 @@ def test_create_empty(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    # Prepare for checks
-    result_index_path = os.path.join(data_dir, '.morenines', 'index')
+    result_index = read_index(data_dir)
 
-    assert os.path.isfile(result_index_path)
-
-    with open(result_index_path) as f:
-        result_index = [line for line in f.readlines() if not line.startswith("date: ")]
-
-    expected_index_path = os.path.join(expected_dir, '.morenines', 'index')
-
-    with open(expected_index_path) as f:
-        expected_index = f.readlines()
+    expected_index = read_index(expected_dir)
 
     assert result_index == expected_index
 

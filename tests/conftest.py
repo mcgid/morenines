@@ -29,3 +29,14 @@ def expected_dir(request, module_dir):
     dir_name = test_name + '-expected'
 
     return os.path.join(module_dir, dir_name)
+
+
+def read_index(repo_dir):
+    index_path = os.path.join(repo_dir, '.morenines', 'index')
+
+    assert os.path.isfile(index_path)
+
+    with open(index_path) as f:
+        index = [line for line in f.readlines() if not line.startswith("date: ")]
+
+    return index
