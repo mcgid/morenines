@@ -8,6 +8,8 @@ def test_update_add(data_dir, expected_dir):
     runner = CliRunner()
     result = runner.invoke(application.main, ['update', '--add-new', data_dir])
 
+    assert result.exit_code == 0
+
     # Prepare for checks
     result_index_path = os.path.join(data_dir, '.morenines', 'index')
 
