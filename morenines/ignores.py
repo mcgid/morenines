@@ -7,7 +7,7 @@ class Ignores(object):
     def __init__(self, default_patterns=[]):
         self.patterns = default_patterns
 
-    def read(cls, path):
+    def read(self, path):
         with open(path, 'r') as stream:
             self.patterns.extend([line.strip() for line in stream])
     
