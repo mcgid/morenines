@@ -1,4 +1,5 @@
 import os
+import errno
 
 from morenines import output
 from morenines import util
@@ -11,6 +12,8 @@ NAMES = {
     'mn_dir': '.morenines',
     'index': 'index',
     'ignore': 'ignore',
+    'new_index': 'new_index',
+    'index_archive_dir': 'indexes',
 }
 
 DEFAULT_IGNORE_PATTERNS = [
@@ -29,6 +32,8 @@ class Repository(object):
         self.mn_dir_path = os.path.join(self.path, NAMES['mn_dir'])
         self.index_path = os.path.join(self.mn_dir_path, NAMES['index'])
         self.ignore_path = os.path.join(self.mn_dir_path, NAMES['ignore'])
+        self.new_index_path = os.path.join(self.mn_dir_path, NAMES['new_index'])
+        self.index_archive_dir = os.path.join(self.mn_dir_path, NAMES['index_archive_dir'])
 
 
     def create(self, path):
@@ -64,6 +69,89 @@ class Repository(object):
 
         if os.path.isfile(self.ignore_path):
             self.ignore.read(self.ignore_path)
+
+
+    def write_index(self):
+        """Rename the old index file and write the new one
+        """
+        self.check_index_sanity()
+
+        # Figure out what we're going to rename the current index file to
+        # We need to put this in the 'parent' header of the new index, so we
+        # figure this out before we do anything
+        archived_parent_name = self.get_archived_parent_name()
+
+        self.index.parent = archived_parent_name
+
+        # Write the new index
+        with open(self.new_index_path, 'w') as new_index_stream:
+            self.index.write(new_index_stream)
+
+
+        # Rename the new index file to be the current index
+        try:
+            os.rename(self.new_index_path, self.index_path)
+        except OSError as e:
+            output.error("Could not rename new index from {} to {}".format(self.new_index_path, self.index_path))
+            util.abort()
+
+
+    def check_index_sanity(self):
+        """Try to ensure that the current repository state is expected and sensible.
+        """
+
+        if not os.path.isfile(self.index_path):
+            output.error("No current index file exists: {}".format(self.index_path))
+
+            if os.path.isfile(self.new_index_path):
+                output.error("A new temporary index file exists, however: {}".format(self.new_index_path))
+                additional_help = "(possibly the one listed above) "
+            else:
+                additional_help = ""
+
+            output.error("To fix this problem, rename the newest valid index file {}to {}".format(additional_help, self.index_path))
+            output.error("(You may have to reattempt the last update command)")
+
+            util.abort()
+
+        if os.path.isfile(self.new_index_path):
+            output.error("A new temporary index file already exists: {}".format(self.new_index_path))
+
+            output.error("To fix this problem, move this temporary index file out of its directory")
+            output.error("(You may have to reattempt the last update command)")
+
+            util.abort()
+
+
+    def archive_current_index(self, archived_name):
+        # Get the path we're renaming the current index to
+        archived_path = os.path.join(self.index_archive_dir, archived_name)
+
+        # Create the index archive dir if possible - EAFP
+        try:
+            os.mkdir(self.index_archive_dir)
+        except OSError as e:
+            # When the dir already exists, ignore the exception
+            if e.errno == errno.EEXIST:
+                pass
+            else:
+                raise
+
+        # Archive the current index by renaming it into the archive dir
+        try:
+            os.rename(self.index_path, archived_path)
+        except OSError as e:
+            output.error("Could not rename current index from {} to {}".format(self.index_path, old_index_dest_path))
+            output.error("(Does the latter already exist?)")
+            util.abort()
+
+
+    def get_archived_parent_name(self):
+        old_index = Index(self.path)
+
+        old_index.read(self.index_path)
+
+        return "{}-{}".format(NAMES['index'], old_index.date)
 
 
 def find_repo(start_path):
