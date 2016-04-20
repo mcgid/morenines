@@ -47,6 +47,10 @@ class Repository(object):
 
         os.mkdir(self.mn_dir_path)
 
+        # Write an empty index file as a starter
+        with open(self.index_path, 'w') as stream:
+            self.index.write(stream)
+
 
     def open(self, path):
         if not os.path.exists(path):
@@ -87,6 +91,7 @@ class Repository(object):
         with open(self.new_index_path, 'w') as new_index_stream:
             self.index.write(new_index_stream)
 
+        self.archive_current_index(archived_parent_name)
 
         # Rename the new index file to be the current index
         try:
