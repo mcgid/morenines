@@ -100,16 +100,10 @@ class Repository(object):
         """Try to ensure that the current repository state is expected and sensible.
         """
 
-        if not os.path.isfile(self.index_path):
+        if not os.path.isfile(self.index_path) and os.path.isfile(self.new_index_path):
             output.error("No current index file exists: {}".format(self.index_path))
-
-            if os.path.isfile(self.new_index_path):
-                output.error("A new temporary index file exists, however: {}".format(self.new_index_path))
-                additional_help = "(possibly the one listed above) "
-            else:
-                additional_help = ""
-
-            output.error("To fix this problem, rename the newest valid index file {}to {}".format(additional_help, self.index_path))
+            output.error("A new temporary index file exists, however: {}".format(self.new_index_path))
+            output.error("To fix this problem, rename the newest valid index file (possibly the one listed above) to {}".format(self.index_path))
             output.error("(You may have to reattempt the last update command)")
 
             util.abort()
