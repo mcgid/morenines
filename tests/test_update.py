@@ -1,7 +1,7 @@
 import os
 from click.testing import CliRunner
 
-from conftest import read_index
+from conftest import mn_dirs_equal
 
 from morenines import application
 
@@ -16,11 +16,7 @@ def test_update_no_changes(data_dir, expected_dir):
 
     assert result.output == expected_output
 
-    result_index = read_index(data_dir)
-
-    expected_index = read_index(expected_dir)
-
-    assert result_index == expected_index
+    assert mn_dirs_equal(data_dir, expected_dir) == True
 
 
 def test_update_add(data_dir, expected_dir):
@@ -29,12 +25,7 @@ def test_update_add(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    result_index = read_index(data_dir)
-
-    expected_index = read_index(expected_dir)
-
-    assert result_index == expected_index
-
+    assert mn_dirs_equal(data_dir, expected_dir) == True
 
 def test_update_remove(data_dir, expected_dir):
     runner = CliRunner()
@@ -42,8 +33,4 @@ def test_update_remove(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    result_index = read_index(data_dir)
-
-    expected_index = read_index(expected_dir)
-
-    assert result_index == expected_index
+    assert mn_dirs_equal(data_dir, expected_dir) == True
