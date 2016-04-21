@@ -27,7 +27,26 @@ def test_update_add(data_dir, expected_dir):
 
     assert mn_dirs_equal(data_dir, expected_dir) == True
 
+
+def test_update_add2(data_dir, expected_dir):
+    runner = CliRunner()
+    result = runner.invoke(application.main, ['update', '--add-new', data_dir])
+
+    assert result.exit_code == 0
+
+    assert mn_dirs_equal(data_dir, expected_dir) == True
+
+
 def test_update_remove(data_dir, expected_dir):
+    runner = CliRunner()
+    result = runner.invoke(application.main, ['update', '--remove-missing', data_dir])
+
+    assert result.exit_code == 0
+
+    assert mn_dirs_equal(data_dir, expected_dir) == True
+
+
+def test_update_remove2(data_dir, expected_dir):
     runner = CliRunner()
     result = runner.invoke(application.main, ['update', '--remove-missing', data_dir])
 
