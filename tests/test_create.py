@@ -1,7 +1,7 @@
 import os
 from click.testing import CliRunner
 
-from conftest import read_index
+from conftest import mn_dirs_equal
 
 from morenines import application
 
@@ -12,11 +12,7 @@ def test_create(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    result_index = read_index(data_dir)
-
-    expected_index = read_index(expected_dir)
-
-    assert result_index == expected_index
+    assert mn_dirs_equal(data_dir, expected_dir)
 
 
 def test_create_empty(data_dir, expected_dir):
@@ -25,11 +21,7 @@ def test_create_empty(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    result_index = read_index(data_dir)
-
-    expected_index = read_index(expected_dir)
-
-    assert result_index == expected_index
+    assert mn_dirs_equal(data_dir, expected_dir)
 
 
 def test_create_with_existing_index(data_dir):

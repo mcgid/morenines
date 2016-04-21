@@ -1,6 +1,7 @@
 import os
 import sys
 import hashlib
+import datetime
 
 def abort():
     """Stop exectution and return nonzero error code"""
@@ -61,3 +62,11 @@ def get_new_and_missing(repo, include_ignored=False):
     missing_files = [path for path in repo.index.files.keys() if path not in current_files]
 
     return new_files, missing_files, ignored_files
+
+
+TIMESTAMP_FORMAT = "%Y-%m-%d" + "T" + "%H%M%S"
+
+def timestamp_now():
+    now = datetime.datetime.utcnow()
+
+    return now.strftime(TIMESTAMP_FORMAT)

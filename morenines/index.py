@@ -1,9 +1,8 @@
 import os
 import collections
-import datetime
 import click
 
-from morenines.util import get_hash
+from morenines.util import get_hash, timestamp_now
 
 
 class Index(object):
@@ -30,6 +29,11 @@ class Index(object):
 
             self._check_version(headers)
 
+            self.date = headers['date']
+
+            if 'parent' in headers:
+                self.parent = headers['parent']
+
             self.files = parse_files(stream)
 
     def add(self, paths):
@@ -47,8 +51,17 @@ class Index(object):
     def write(self, stream):
         headers = [
             ('version', self.reader_version),
-            ('date', datetime.datetime.utcnow().isoformat()),
+            ('date', timestamp_now()),
         ]
+
+        # If we have a parent property, add it to the headers to write
+        # Note: Using try/except instead of hasattr because the latter can hide
+        # other exceptions in Python 2.
+        try:
+            headers.append(('parent', self.parent))
+        except AttributeError:
+            # If there's no parent property, this is the first index
+            pass
 
         for key, value in headers:
             stream.write("{}: {}\n".format(key, value))

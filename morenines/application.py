@@ -96,8 +96,7 @@ def update(repo, add_new, remove_missing):
     if not any([new_files, missing_files]):
         info("Index is up-to-date (no new or missing files)")
     elif add_new or remove_missing:
-        with click.open_file(repo.index_path, mode='w') as stream:
-            repo.index.write(stream)
+        repo.write_index()
         success("Wrote index file {}".format(repo.index_path))
     else:
         warning("No action taken (use '--add-new' or '--remove-missing' to change the index)")
