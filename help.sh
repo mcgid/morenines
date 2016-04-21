@@ -6,7 +6,6 @@ function run {
 }
 
 run
-run create
 run edit-ignores
 run status
 run update
