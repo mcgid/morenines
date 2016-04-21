@@ -57,27 +57,6 @@ def init(ctx, repo_path):
     success("Initialized empty morenines repository in {}".format(repo.mn_dir_path))
 
 
-@main.command(short_help="Write a new index file")
-@common_params('repo_path')
-@pass_repository
-def create(repo):
-    """Write a new index file with the hashes of files under it."""
-
-    if os.path.isfile(repo.index_path):
-        error("Index file already exists: {}".format(repo.index_path))
-        error("(To update an existing index, use the 'update' command)")
-        abort()
-
-    files, ignored = get_files(repo.path, repo.ignore)
-
-    repo.index.add(files)
-
-    with click.open_file(repo.index_path, mode='w') as stream:
-        repo.index.write(stream)
-
-    success('Wrote index file {}'.format(repo.index_path))
-
-
 @main.command(short_help="Update an existing index file")
 @common_params('repo_path')
 @pass_repository
