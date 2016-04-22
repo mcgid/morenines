@@ -7,5 +7,6 @@ function run {
 
 run
 run edit-ignores
+run init
 run status
 run update
