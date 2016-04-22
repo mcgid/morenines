@@ -1,6 +1,7 @@
 import os
 import pytest
 import shutil
+import contextlib
 
 @pytest.fixture
 def module_dir(request):
@@ -29,6 +30,16 @@ def expected_dir(request, module_dir):
     dir_name = test_name + '-expected'
 
     return os.path.join(module_dir, dir_name)
+
+
+@contextlib.contextmanager
+def tmp_chdir(path):
+    cwd = os.getcwd()
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(cwd)
 
 
 def read_file(path):
