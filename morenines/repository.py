@@ -21,10 +21,6 @@ DEFAULT_IGNORE_PATTERNS = [
 ]
 
 class Repository(object):
-    def __init__(self, default_path):
-        self.default_path = default_path
-
-
     # Since click will try to instantiate this class for us with no args, we
     # put the __init__ code here instead
     def init(self, path):
@@ -41,9 +37,6 @@ class Repository(object):
 
 
     def create(self, path):
-        if not path:
-            path = self.default_path
-
         repo_path = find_repo(path)
 
         if repo_path:
@@ -60,9 +53,6 @@ class Repository(object):
 
 
     def open(self, path):
-        if not path:
-            path = self.default_path
-
         if not os.path.exists(path):
             output.error("Repository path does not exist: {}".format(path))
             util.abort()
