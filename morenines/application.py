@@ -39,20 +39,17 @@ def common_params(*param_names):
 
 
 @click.group()
-def main():
+@click.pass_context
+def main(ctx):
     """A tool to track whether the content of files has changed."""
-    pass
+    ctx.obj = Repository(default_path=os.getcwd())
 
 
 @main.command(short_help="Initialize a new morenines repository")
 @common_params('new_repo_path')
-@click.pass_context
-def init(ctx, repo_path):
-    repo = Repository()
-
+@pass_repository
+def init(repo, repo_path):
     repo.create(repo_path)
-
-    ctx.obj = repo
 
     success("Initialized empty morenines repository in {}".format(repo.mn_dir_path))
 
