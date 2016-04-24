@@ -1,7 +1,7 @@
 import os
 from click.testing import CliRunner
 
-from conftest import tmp_chdir, mn_dirs_equal
+from conftest import tmp_chdir, assert_mn_dirs_equal
 
 from morenines import application
 
@@ -18,7 +18,7 @@ def test_update_no_changes(data_dir, expected_dir):
 
     assert result.output == expected_output
 
-    assert mn_dirs_equal(data_dir, expected_dir) == True
+    assert_mn_dirs_equal(data_dir, expected_dir)
 
 
 def test_update_add(data_dir, expected_dir):
@@ -29,7 +29,7 @@ def test_update_add(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    assert mn_dirs_equal(data_dir, expected_dir) == True
+    assert_mn_dirs_equal(data_dir, expected_dir)
 
 
 def test_update_add2(data_dir, expected_dir):
@@ -40,7 +40,7 @@ def test_update_add2(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    assert mn_dirs_equal(data_dir, expected_dir) == True
+    assert_mn_dirs_equal(data_dir, expected_dir)
 
 
 def test_update_remove(data_dir, expected_dir):
@@ -51,7 +51,7 @@ def test_update_remove(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    assert mn_dirs_equal(data_dir, expected_dir) == True
+    assert_mn_dirs_equal(data_dir, expected_dir)
 
 
 def test_update_remove2(data_dir, expected_dir):
@@ -62,4 +62,4 @@ def test_update_remove2(data_dir, expected_dir):
 
     assert result.exit_code == 0
 
-    assert mn_dirs_equal(data_dir, expected_dir) == True
+    assert_mn_dirs_equal(data_dir, expected_dir)
