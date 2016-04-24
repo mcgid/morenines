@@ -75,6 +75,63 @@ class Repository(object):
             self.ignore.read(self.ignore_path)
 
 
+    def normalize_paths(self, paths):
+        """Make paths relative to the repo root.
+
+        If a path is not a descendant of the repo root, raise an exception.
+        """
+        rel_paths = []
+
+        for path in paths:
+            # Remove any relative path weirdness
+            path = os.path.abspath(path)
+
+            if not path.startswith(self.path):
+                output.error("Path not in repository: {}".format(path))
+                util.abort()
+
+            rel_paths.append(os.path.relpath(path, self.path))
+
+        return rel_paths
+
+
+    def expand_subdirs(self, paths):
+        dirs = [p for p in paths if os.path.isdir(p)]
+
+        not_dirs = [p for p in paths if p not in dirs]
+
+        for root in dirs:
+            for dir_path, dir_names, file_names in os.walk(root):
+                # Assign dir_names in place with [:] so that os.walk doesn't traverse ignored dirs
+                dir_names[:] = [d for d in dir_names if not self.ignores.match(d)]
+
+                file_names = [f for f in file_names if not self.ignores.match(f)]
+                file_paths = [os.path.join(dir_path, f) for f in file_names]
+
+                not_dirs.extend(self.normalize_paths(file_paths))
+
+        return not_dirs
+
+
+    def add(self, paths):
+        add_to_index = []
+
+        for path in paths:
+            if os.path.isdir(path):
+                subdir_paths, ignored_subdir_paths = util.get_files(path, self.ignore, True)
+                self.add(subdir_paths)
+            elif not os.path.exists:
+                output.error("Path does not exist: {}".format(path))
+                util.abort()
+
+            if path in self.index.files:
+                continue
+
+            add_to_index.append(path)
+
+        self.index.add(add_to_index)
+
+
     def write_index(self):
         """Rename the old index file and write the new one
         """

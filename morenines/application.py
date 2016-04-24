@@ -79,6 +79,40 @@ def update(repo, add_new, remove_missing):
         warning("No action taken (use '--add-new' or '--remove-missing' to change the index)")
 
 
+@main.command(short_help="Hash and add any files that aren't in the index")
+@pass_repository
+@click.argument("paths", required=False, nargs=-1, type=click.Path(resolve_path=True))
+def add(repo, paths):
+    """Update an existing index wtih new file hashes.
+
+    Must be called from inside an existing repository.
+    """
+    repo.open(default_repo_path())
+
+    if not paths:
+        warning("No action taken (supply one or more PATHS to files to add to the repository)")
+        return
+
+    paths = repo.normalize_paths(paths)
+
+    for path in paths:
+        if not os.path.exists(path):
+            error("Path does not exist: {}".format(path))
+            abort()
+
+    paths = repo.expand_subdirs(paths)
+
+    # If dirs were the only supplied paths, and walking them produced no valid files
+    # TODO this could really benefit from a --verbose option, to see what is ignored
+    if not paths:
+        warning("No action taken (if supplied PATHS were subdirs, walking them produced no files)")
+        return
+
+    repo.add(paths)
+    repo.write_index()
+    success("Wrote index file {}".format(repo.index_path))
+
+
 @main.command(short_help="Show new, missing or ignored files")
 @common_params('ignored', 'color')
 @click.option('--verify/--no-verify', default=False, help="Re-hash all files in index and check for changes")
