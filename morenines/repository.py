@@ -113,6 +113,20 @@ class Repository(object):
         return not_dirs
 
 
+    def expand_subdirs_from_index(self, paths):
+        """Return the list of paths with directories replaced by all of their descendent
+        children that are in the index.
+        """
+        dirs = [p for p in paths if os.path.isdir(p)]
+
+        not_dirs = [p for p in paths if p not in dirs]
+
+        for root in dirs:
+            not_dirs.extend([path for path in self.index.files if path.startswith(root)])
+
+        return not_dirs
+
+
     def add(self, paths):
         add_to_index = []
 
@@ -130,6 +144,10 @@ class Repository(object):
             add_to_index.append(path)
 
         self.index.add(add_to_index)
+
+
+    def remove(self, paths):
+        self.index.remove(paths)
 
 
     def write_index(self):
