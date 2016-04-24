@@ -50,15 +50,7 @@ def read_file(path):
         return [line for line in f.readlines() if not line.startswith("date: ")]
 
 
-def files_equal(test_path, expected_path):
-    test_file = read_file(test_path)
-
-    expected_file = read_file(expected_path)
-
-    return test_file == expected_file
-
-
-def mn_dirs_equal(test_dir, expected):
+def assert_mn_dirs_equal(test_dir, expected):
     for parent_path, subdir_names, file_names in os.walk(expected):
         for file_name in file_names:
             expected_path = os.path.join(parent_path, file_name)
@@ -67,13 +59,9 @@ def mn_dirs_equal(test_dir, expected):
 
             test_path = os.path.join(test_dir, rel_path)
 
-            if not files_equal(test_path, expected_path):
-                return False
+            assert read_file(test_path) == read_file(expected_path)
 
         for subdir_name in subdir_names:
             subdir_path = os.path.join(parent_path, subdir_name)
 
-            if not os.path.isdir(subdir_path):
-                return False
-
-    return True
+            assert os.path.isdir(subdir_path) == True
