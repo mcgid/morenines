@@ -52,33 +52,6 @@ def init(repo, repo_path):
     success("Initialized empty morenines repository in {}".format(repo.mn_dir_path))
 
 
-@main.command(short_help="Update an existing index file")
-@pass_repository
-@click.option('--add-new/--no-add-new', default=False, help="Hash and add any files that aren't in the index")
-@click.option('--remove-missing/--no-remove-missing', default=False, help="Delete any the hashes of any files in the index that no longer exist.")
-def update(repo, add_new, remove_missing):
-    """Update an existing index file with new file hashes, missing files removed, etc.
-
-    Must be called from inside an existing repository.
-    """
-    repo.open(default_repo_path())
-    new_files, missing_files, ignored_files = get_new_and_missing(repo)
-
-    if add_new:
-        repo.index.add(new_files)
-
-    if remove_missing is True:
-        repo.index.remove(missing_files)
-
-    if not any([new_files, missing_files]):
-        info("Index is up-to-date (no new or missing files)")
-    elif add_new or remove_missing:
-        repo.write_index()
-        success("Wrote index file {}".format(repo.index_path))
-    else:
-        warning("No action taken (use '--add-new' or '--remove-missing' to change the index)")
-
-
 @main.command(short_help="Hash and add any files that aren't in the index")
 @pass_repository
 @click.argument("paths", required=False, nargs=-1, type=click.Path(resolve_path=True))

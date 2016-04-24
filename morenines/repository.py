@@ -184,7 +184,7 @@ class Repository(object):
             output.error("No current index file exists: {}".format(self.index_path))
             output.error("A new temporary index file exists, however: {}".format(self.new_index_path))
             output.error("To fix this problem, rename the newest valid index file (possibly the one listed above) to {}".format(self.index_path))
-            output.error("(You may have to reattempt the last update command)")
+            output.error("(You may have to reattempt the last add or remove command)")
 
             util.abort()
 
@@ -192,7 +192,7 @@ class Repository(object):
             output.error("A new temporary index file already exists: {}".format(self.new_index_path))
 
             output.error("To fix this problem, move this temporary index file out of its directory")
-            output.error("(You may have to reattempt the last update command)")
+            output.error("(You may have to reattempt the last add or remove command)")
 
             util.abort()
 
