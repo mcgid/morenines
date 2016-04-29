@@ -159,9 +159,6 @@ class Repository(object):
         # add paths to index
         self.index.add(file_paths)
 
-        # write index
-        self.write_index()
-
         return file_paths
 
 
@@ -195,9 +192,6 @@ class Repository(object):
 
         # remove paths from index
         self.index.remove(file_paths)
-
-        # write index
-        self.write_index()
 
         return file_paths
 

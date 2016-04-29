@@ -75,9 +75,14 @@ def add(repo, paths):
     except PathError as e:
         error(e)
         abort()
-    else:
-        # Print success message in else: so that we don't print if we caught warning
-        success("Files added to repository:", added_paths)
+
+    try:
+        repo.write_index()
+    except RepositoryError as e:
+        error(e)
+        abort()
+
+    success("Files added to repository:", added_paths)
 
 
 @main.command(short_help="Remove the hashes of supplied paths from the index.")
@@ -102,9 +107,14 @@ def remove(repo, paths):
     except PathError as e:
         error(e)
         abort()
-    else:
-        # Print success message in else: so that we don't print if we caught warning
-        success("Files removed from repository:", removed_paths)
+
+    try:
+        repo.write_index()
+    except RepositoryError as e:
+        error(e)
+        abort()
+
+    success("Files removed from repository:", removed_paths)
 
 
 @main.command(short_help="Show new, missing or ignored files")
