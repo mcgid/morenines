@@ -7,6 +7,7 @@ from morenines.ignores import Ignores
 from morenines.repository import Repository
 from morenines.util import get_files, get_hash, get_new_and_missing, abort
 from morenines.output import info, success, warning, error, print_filelists
+from morenines.exceptions import PathError, NoEffectWarning
 
 
 pass_repository = click.make_pass_decorator(Repository, ensure=True)
@@ -66,24 +67,17 @@ def add(repo, paths):
         warning("No action taken (supply one or more PATHS to files to add to the repository)")
         return
 
-    paths = repo.normalize_paths(paths)
-
-    for path in paths:
-        if not os.path.exists(path):
-            error("Path does not exist: {}".format(path))
-            abort()
-
-    paths = repo.expand_subdirs(paths)
-
-    # If dirs were the only supplied paths, and walking them produced no valid files
-    # TODO this could really benefit from a --verbose option, to see what is ignored
-    if not paths:
-        warning("No action taken (if supplied PATHS were subdirs, walking them produced no files)")
+    try:
+        added_paths = repo.add(paths)
+    except NoEffectWarning as w:
+        warning(w)
         return
-
-    repo.add(paths)
-    repo.write_index()
-    success("Wrote index file {}".format(repo.index_path))
+    except PathError as e:
+        error(e)
+        abort()
+    else:
+        # Print success message in else: so that we don't print if we caught warning
+        success("Files added to repository:", added_paths)
 
 
 @main.command(short_help="Remove the hashes of supplied paths from the index.")
@@ -100,24 +94,17 @@ def remove(repo, paths):
         warning("No action taken (supply one or more PATHS to files to add to the repository)")
         return
 
-    paths = repo.normalize_paths(paths)
-
-    for path in paths:
-        if path not in repo.index.files:
-            error("Path not in repository: {}".format(path))
-            abort()
-
-    paths = repo.expand_subdirs_from_index(paths)
-
-    # If dirs were the only supplied paths, and walking them produced no valid files
-    # TODO this could really benefit from a --verbose option, to see what is ignored
-    if not paths:
-        warning("No action taken (if supplied PATHS were subdirs, no tracked files are in them)")
+    try:
+        removed_paths = repo.remove(paths)
+    except NoEffectWarning as w:
+        warning(w)
         return
-
-    repo.remove(paths)
-    repo.write_index()
-    success("Wrote index file {}".format(repo.index_path))
+    except PathError as e:
+        error(e)
+        abort()
+    else:
+        # Print success message in else: so that we don't print if we caught warning
+        success("Files removed from repository:", removed_paths)
 
 
 @main.command(short_help="Show new, missing or ignored files")
