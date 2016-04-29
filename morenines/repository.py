@@ -1,13 +1,10 @@
 import os
 import errno
 
-from morenines import output
-from morenines import util
-
 from morenines.index import Index
 from morenines.ignores import Ignores
 
-from morenines.exceptions import PathError, NoEffectWarning
+from morenines.exceptions import PathError, RepositoryError, NoEffectWarning
 
 
 NAMES = {
@@ -42,8 +39,7 @@ class Repository(object):
         repo_path = find_repo(path)
 
         if repo_path:
-            output.error("Repository already exists: {}".format(repo_path))
-            util.abort()
+            raise PathError("Repository already exists at path: {}".format(repo_path), repo_path)
 
         self.init(path)
 
@@ -55,18 +51,13 @@ class Repository(object):
 
 
     def open(self, path):
-        if not os.path.exists(path):
-            output.error("Repository path does not exist: {}".format(path))
-            util.abort()
-        elif not os.path.isdir(path):
-            output.error("Repository path is not a directory: {}".format(path))
-            util.abort()
+        if os.path.exists(path) == False or os.path.isdir(path) == False:
+            raise PathError("Invalid repository path: {}".format(path), path)
 
         repo_path = find_repo(path)
 
         if not repo_path:
-            output.error("Cannot find repository in '{}' or any parent dir".format(path))
-            util.abort()
+            raise PathError("Not a morenines repository (or any of its parent dirs): {}".format(path), path)
 
         self.init(repo_path)
 
@@ -89,8 +80,7 @@ class Repository(object):
             path = os.path.abspath(path)
 
             if not path.startswith(self.path):
-                output.error("Path not in repository: {}".format(path))
-                util.abort()
+                raise PathError("Path not in repository: {}".format(path), path)
 
             rel_paths.append(os.path.relpath(path, self.path))
 
@@ -217,8 +207,8 @@ class Repository(object):
         try:
             os.rename(self.new_index_path, self.index_path)
         except OSError as e:
-            output.error("Could not rename new index from {} to {}".format(self.new_index_path, self.index_path))
-            util.abort()
+            # TODO (py3 only): chain the errors
+            raise RepositoryError("Could not move the new index file into place")
 
 
     def check_index_sanity(self):
@@ -226,20 +216,20 @@ class Repository(object):
         """
 
         if not os.path.isfile(self.index_path) and os.path.isfile(self.new_index_path):
-            output.error("No current index file exists: {}".format(self.index_path))
-            output.error("A new temporary index file exists, however: {}".format(self.new_index_path))
-            output.error("To fix this problem, rename the newest valid index file (possibly the one listed above) to {}".format(self.index_path))
-            output.error("(You may have to reattempt the last add or remove command)")
+            message = "No current index file exists: {}\n".format(self.index_path)
+            message += "A new temporary index file exists, however: {}\n".format(self.new_index_path)
+            message += "To fix this problem, rename the newest valid index file (possibly the one listed above) to {}\n".format(self.index_path)
+            message += "(You may have to reattempt the last add or remove command)"
 
-            util.abort()
+            raise RepositoryError(error_message)
 
         if os.path.isfile(self.new_index_path):
-            output.error("A new temporary index file already exists: {}".format(self.new_index_path))
+            message = "A new temporary index file already exists: {}\n".format(self.new_index_path)
 
-            output.error("To fix this problem, move this temporary index file out of its directory")
-            output.error("(You may have to reattempt the last add or remove command)")
+            message += "To fix this problem, move this temporary index file out of its directory\n"
+            message += "(You may have to reattempt the last add or remove command)"
 
-            util.abort()
+            raise RepositoryError(message)
 
 
     def archive_current_index(self, archived_name):
@@ -250,8 +240,8 @@ class Repository(object):
         try:
             os.mkdir(self.index_archive_dir)
         except OSError as e:
-            # When the dir already exists, ignore the exception
             if e.errno == errno.EEXIST:
+                # NOT AN ERROR: The archive dir will almost always exist
                 pass
             else:
                 raise
@@ -260,9 +250,8 @@ class Repository(object):
         try:
             os.rename(self.index_path, archived_path)
         except OSError as e:
-            output.error("Could not rename current index from {} to {}".format(self.index_path, old_index_dest_path))
-            output.error("(Does the latter already exist?)")
-            util.abort()
+            # TODO (py3 only): chain the errors
+            raise RepositoryError("Could not archive the current index file")
 
 
     def get_archived_parent_name(self):
