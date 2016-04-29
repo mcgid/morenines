@@ -1,11 +1,10 @@
 import os
 import errno
 
-from morenines import output
-from morenines import util
-
 from morenines.index import Index
 from morenines.ignores import Ignores
+
+from morenines.exceptions import PathError, RepositoryError, NoEffectWarning
 
 
 NAMES = {
@@ -40,8 +39,7 @@ class Repository(object):
         repo_path = find_repo(path)
 
         if repo_path:
-            output.error("Repository already exists: {}".format(repo_path))
-            util.abort()
+            raise PathError("Repository already exists at path: {}".format(repo_path), repo_path)
 
         self.init(path)
 
@@ -53,18 +51,13 @@ class Repository(object):
 
 
     def open(self, path):
-        if not os.path.exists(path):
-            output.error("Repository path does not exist: {}".format(path))
-            util.abort()
-        elif not os.path.isdir(path):
-            output.error("Repository path is not a directory: {}".format(path))
-            util.abort()
+        if os.path.exists(path) == False or os.path.isdir(path) == False:
+            raise PathError("Invalid repository path: {}".format(path), path)
 
         repo_path = find_repo(path)
 
         if not repo_path:
-            output.error("Cannot find repository in '{}' or any parent dir".format(path))
-            util.abort()
+            raise PathError("Not a morenines repository (or any of its parent dirs): {}".format(path), path)
 
         self.init(repo_path)
 
@@ -87,68 +80,110 @@ class Repository(object):
             path = os.path.abspath(path)
 
             if not path.startswith(self.path):
-                output.error("Path not in repository: {}".format(path))
-                util.abort()
+                raise PathError("Path not in repository: {}".format(path), path)
 
             rel_paths.append(os.path.relpath(path, self.path))
 
         return rel_paths
 
 
-    def expand_subdirs(self, paths):
-        dirs = [p for p in paths if os.path.isdir(p)]
+    def _walk_tree(self, root):
+        """Walk the directory tree starting with root, returning all non-ignored paths below.
 
-        not_dirs = [p for p in paths if p not in dirs]
-
-        for root in dirs:
-            for dir_path, dir_names, file_names in os.walk(root):
-                # Assign dir_names in place with [:] so that os.walk doesn't traverse ignored dirs
-                dir_names[:] = [d for d in dir_names if not self.ignores.match(d)]
-
-                file_names = [f for f in file_names if not self.ignores.match(f)]
-                file_paths = [os.path.join(dir_path, f) for f in file_names]
-
-                not_dirs.extend(self.normalize_paths(file_paths))
-
-        return not_dirs
-
-
-    def expand_subdirs_from_index(self, paths):
-        """Return the list of paths with directories replaced by all of their descendent
-        children that are in the index.
+        Internal method; input is not validated. Call self.normalize_paths() on
+        `root` param first.
         """
-        dirs = [p for p in paths if os.path.isdir(p)]
+        paths = []
 
-        not_dirs = [p for p in paths if p not in dirs]
+        root = os.path.abspath(root)
 
-        for root in dirs:
-            not_dirs.extend([path for path in self.index.files if path.startswith(root)])
+        for dir_path, dir_names, file_names in os.walk(root):
+            ignored_dirs = [d for d in dir_names if self.ignore.match(d)]
+            ignored_files = [f for f in file_names if self.ignore.match(f)]
 
-        return not_dirs
+            # Assign dir_names in place with [:] so that os.walk doesn't traverse ignored dirs
+            dir_names[:] = [d for d in dir_names if d not in ignored_dirs]
+
+            file_names = [f for f in file_names if f not in ignored_files]
+            file_paths = [os.path.join(dir_path, f) for f in file_names]
+            file_paths = self.normalize_paths(file_paths)
+
+            paths.extend(file_paths)
+
+        return paths
 
 
     def add(self, paths):
-        add_to_index = []
+        """Append untracked files to the index with their hashes and write it.
+
+        Returns the list of paths that were added to the repository.
+        """
+
+        # We need to differentiate paths that are definitely files
+        file_paths = []
+
+        # Make paths relative to repo root
+        paths = self.normalize_paths(paths)
 
         for path in paths:
+            # if existing path is a dir, walk its subdirs to collect paths in dir
             if os.path.isdir(path):
-                subdir_paths, ignored_subdir_paths = util.get_files(path, self.ignore, True)
-                self.add(subdir_paths)
+                subpaths = self._walk_tree(path)
+                if subpaths:
+                    file_paths.extend(subpaths)
+                else:
+                    # We should log the fact that the param the user supplied
+                    # did nothing, but NoEffectWarning is an Exception and
+                    # would break control flow
+                    pass
             elif not os.path.exists:
-                output.error("Path does not exist: {}".format(path))
-                util.abort()
+                raise PathError("Path does not exist: {}".format(path), path)
+            else:
+                file_paths.append(path)
 
-            if path in self.index.files:
-                continue
+        # If dirs were the only supplied paths, and walking them produced no valid files
+        # TODO this could really benefit from a --verbose option, to see what is ignored
+        if not file_paths:
+            raise NoEffectWarning("No files in the supplied directory path(s) were able to be added. (Are they ignored?)")
 
-            add_to_index.append(path)
+        # add paths to index
+        self.index.add(file_paths)
 
-        self.index.add(add_to_index)
+        return file_paths
 
 
     def remove(self, paths):
-        self.index.remove(paths)
+        """Remove paths and hashes from the index and write it.
 
+        Returns the list of paths that were removed from the repository.
+        """
+
+        # We need to differentiate paths that are definitely files in the index
+        file_paths = []
+
+        # make paths relative to repo root
+        paths = self.normalize_paths(paths)
+
+        for path in paths:
+            if path in self.index.files:
+                file_paths.append(path)
+            else:
+                subpaths = [p for p in self.index.files.keys() if p.startswith(path)]
+
+                if subpaths:
+                    file_paths.extend(subpaths)
+                else:
+                    raise PathError("Path does not exist in repository: {}".format(path), path)
+
+        # If dirs were the only supplied paths, and walking them produced no valid files
+        # TODO this could really benefit from a --verbose option, to see what is ignored
+        if not file_paths:
+            raise NoEffectWarning("No files in the supplied directory path(s) were able to be added. (Are they ignored?)")
+
+        # remove paths from index
+        self.index.remove(file_paths)
+
+        return file_paths
 
     def write_index(self):
         """Rename the old index file and write the new one
@@ -172,8 +207,8 @@ class Repository(object):
         try:
             os.rename(self.new_index_path, self.index_path)
         except OSError as e:
-            output.error("Could not rename new index from {} to {}".format(self.new_index_path, self.index_path))
-            util.abort()
+            # TODO (py3 only): chain the errors
+            raise RepositoryError("Could not move the new index file into place")
 
 
     def check_index_sanity(self):
@@ -181,20 +216,20 @@ class Repository(object):
         """
 
         if not os.path.isfile(self.index_path) and os.path.isfile(self.new_index_path):
-            output.error("No current index file exists: {}".format(self.index_path))
-            output.error("A new temporary index file exists, however: {}".format(self.new_index_path))
-            output.error("To fix this problem, rename the newest valid index file (possibly the one listed above) to {}".format(self.index_path))
-            output.error("(You may have to reattempt the last add or remove command)")
+            message = "No current index file exists: {}\n".format(self.index_path)
+            message += "A new temporary index file exists, however: {}\n".format(self.new_index_path)
+            message += "To fix this problem, rename the newest valid index file (possibly the one listed above) to {}\n".format(self.index_path)
+            message += "(You may have to reattempt the last add or remove command)"
 
-            util.abort()
+            raise RepositoryError(error_message)
 
         if os.path.isfile(self.new_index_path):
-            output.error("A new temporary index file already exists: {}".format(self.new_index_path))
+            message = "A new temporary index file already exists: {}\n".format(self.new_index_path)
 
-            output.error("To fix this problem, move this temporary index file out of its directory")
-            output.error("(You may have to reattempt the last add or remove command)")
+            message += "To fix this problem, move this temporary index file out of its directory\n"
+            message += "(You may have to reattempt the last add or remove command)"
 
-            util.abort()
+            raise RepositoryError(message)
 
 
     def archive_current_index(self, archived_name):
@@ -205,8 +240,8 @@ class Repository(object):
         try:
             os.mkdir(self.index_archive_dir)
         except OSError as e:
-            # When the dir already exists, ignore the exception
             if e.errno == errno.EEXIST:
+                # NOT AN ERROR: The archive dir will almost always exist
                 pass
             else:
                 raise
@@ -215,9 +250,8 @@ class Repository(object):
         try:
             os.rename(self.index_path, archived_path)
         except OSError as e:
-            output.error("Could not rename current index from {} to {}".format(self.index_path, old_index_dest_path))
-            output.error("(Does the latter already exist?)")
-            util.abort()
+            # TODO (py3 only): chain the errors
+            raise RepositoryError("Could not archive the current index file")
 
 
     def get_archived_parent_name(self):
