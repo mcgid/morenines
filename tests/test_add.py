@@ -80,3 +80,13 @@ def test_add_missing_arg(data_dir, expected_dir):
 
     assert_mn_dirs_equal(data_dir, expected_dir)
 
+
+def test_add_dir(data_dir, expected_dir):
+    """Tries to add a directory with a file in it"""
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['add', '2012/new_dir'])
+
+    assert result.exit_code == 0
+
+    assert_mn_dirs_equal(data_dir, expected_dir)

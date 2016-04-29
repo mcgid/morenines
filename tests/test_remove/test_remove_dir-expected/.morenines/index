@@ -1,0 +1,7 @@
+version: 1
+date: 2016-04-19T181710
+parent: index-2016-04-19T181710
+
+22c416031561485e82f20c093940a3c876b04d0f 2012/file_to_change.txt
+67f52cc0d4671b4f4205a26193d8cb7383b0f24b 2012/static_file2.txt
+502ea79469e2e9a2cafc1fe96dc2e6ce82bd201d static_file.txt

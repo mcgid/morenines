@@ -79,3 +79,14 @@ def test_remove_missing_arg(data_dir, expected_dir):
     assert result.output == expected_output
 
     assert_mn_dirs_equal(data_dir, expected_dir)
+
+
+def test_remove_dir(data_dir, expected_dir):
+    """Removes a dir from an index that doesn't have a parent"""
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['remove', '2012/dir_to_del'])
+
+    assert result.exit_code == 0
+
+    assert_mn_dirs_equal(data_dir, expected_dir)
