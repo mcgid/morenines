@@ -160,5 +160,15 @@ def edit_ignores(repo):
     click.edit(filename=repo.ignore_path)
 
 
+@main.command(name='help', short_help="Display help text")
+@click.argument('command', required=False)
+def help(command):
+    """Display help text, optionally for the given command"""
+    if command:
+        main([command, '--help'])
+    else:
+        main(['--help'])
+
+
 if __name__ == '__main__':
     main()
