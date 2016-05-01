@@ -9,7 +9,7 @@ with open(os.path.join(this_dir, 'DESCRIPTION.rst'), encoding='utf8') as f:
 
 setup(
     name='morenines',
-    version='1.0.1',
+    version='1.1.0',
     url='https://github.com/mcgid/morenines',
     license='MIT',
 
