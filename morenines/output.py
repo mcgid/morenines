@@ -22,7 +22,7 @@ def output(message, color=None, items=[]):
     click.echo(message)
 
     for item in sorted(items):
-        click.echo("  " + item)
+        click.echo("  {}".format(item))
 
     clear_output_color()
 
@@ -30,14 +30,14 @@ def info(message, items=[]):
     output(message, None, items)
 
 def success(message, items=[]):
-    output("SUCCESS: " + message, GOOD_COLOR, items)
+    output("SUCCESS: {}".format(message), GOOD_COLOR, items)
 
 def warning(message, items=[]):
-    output("WARNING: " + message, WARN_COLOR, items)
+    output("WARNING: {}".format(message), WARN_COLOR, items)
 
 
 def error(message, items=[]):
-    output("ERROR: " + message, BAD_COLOR, items)
+    output("ERROR: {}".format(message), BAD_COLOR, items)
 
 def print_filelists(new_files, changed_files, missing_files, ignored_files):
     if not any([new_files, changed_files, missing_files, ignored_files]):

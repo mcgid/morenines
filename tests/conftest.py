@@ -1,6 +1,7 @@
 import os
 import pytest
 import shutil
+import contextlib
 
 @pytest.fixture
 def module_dir(request):
@@ -31,12 +32,36 @@ def expected_dir(request, module_dir):
     return os.path.join(module_dir, dir_name)
 
 
-def read_index(repo_dir):
-    index_path = os.path.join(repo_dir, '.morenines', 'index')
+@contextlib.contextmanager
+def tmp_chdir(path):
+    cwd = os.getcwd()
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(cwd)
 
-    assert os.path.isfile(index_path)
 
-    with open(index_path) as f:
-        index = [line for line in f.readlines() if not line.startswith("date: ")]
+def read_file(path):
+    assert os.path.isfile(path) == True
 
-    return index
+    with open(path, 'r') as f:
+        # Kind of a hack but the date is always going to be different
+        return [line for line in f.readlines() if not line.startswith("date: ")]
+
+
+def assert_mn_dirs_equal(test_dir, expected):
+    for parent_path, subdir_names, file_names in os.walk(expected):
+        for file_name in file_names:
+            expected_path = os.path.join(parent_path, file_name)
+
+            rel_path = os.path.relpath(expected_path, expected)
+
+            test_path = os.path.join(test_dir, rel_path)
+
+            assert read_file(test_path) == read_file(expected_path)
+
+        for subdir_name in subdir_names:
+            subdir_path = os.path.join(parent_path, subdir_name)
+
+            assert os.path.isdir(subdir_path) == True

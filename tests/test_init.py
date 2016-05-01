@@ -5,6 +5,7 @@ from morenines import application
 
 
 def test_init(data_dir):
+    """Inits a repo in a dir with files, subdirs and no existing repo"""
     runner = CliRunner()
 
     result = runner.invoke(application.main, ['init', data_dir])

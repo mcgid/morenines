@@ -1,12 +1,15 @@
 import os
 from click.testing import CliRunner
 
+from conftest import tmp_chdir
+
 from morenines import application
 
 
 def test_status_no_changes_with_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status'])
 
     assert result.exit_code == 0
 
@@ -16,8 +19,9 @@ def test_status_no_changes_with_color(data_dir):
 
 
 def test_status_no_changes_no_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', '--no-color', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status', '--no-color'])
 
     assert result.exit_code == 0
 
@@ -27,8 +31,9 @@ def test_status_no_changes_no_color(data_dir):
 
 
 def test_status_new_file_with_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status'])
 
     assert result.exit_code == 0
 
@@ -39,8 +44,9 @@ def test_status_new_file_with_color(data_dir):
 
 
 def test_status_new_file_no_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', '--no-color', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status', '--no-color'])
 
     assert result.exit_code == 0
 
@@ -51,8 +57,9 @@ def test_status_new_file_no_color(data_dir):
 
 
 def test_status_missing_file_with_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status'])
 
     assert result.exit_code == 0
 
@@ -63,8 +70,9 @@ def test_status_missing_file_with_color(data_dir):
 
 
 def test_status_missing_file_no_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', '--no-color', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status', '--no-color'])
 
     assert result.exit_code == 0
 
@@ -75,8 +83,9 @@ def test_status_missing_file_no_color(data_dir):
 
 
 def test_status_ignored_file_with_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', '--ignored', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status', '--ignored'])
 
     assert result.exit_code == 0
 
@@ -87,8 +96,9 @@ def test_status_ignored_file_with_color(data_dir):
 
 
 def test_status_ignored_file_no_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', '--ignored', '--no-color', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status', '--ignored', '--no-color'])
 
     assert result.exit_code == 0
 
@@ -99,8 +109,9 @@ def test_status_ignored_file_no_color(data_dir):
 
 
 def test_status_changed_file_with_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', '--verify', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status', '--verify'])
 
     assert result.exit_code == 0
 
@@ -111,8 +122,9 @@ def test_status_changed_file_with_color(data_dir):
 
 
 def test_status_changed_file_no_color(data_dir):
-    runner = CliRunner()
-    result = runner.invoke(application.main, ['status', '--verify', '--no-color', data_dir])
+    with tmp_chdir(data_dir):
+        runner = CliRunner()
+        result = runner.invoke(application.main, ['status', '--verify', '--no-color'])
 
     assert result.exit_code == 0
 
