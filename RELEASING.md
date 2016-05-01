@@ -18,11 +18,31 @@ $ git checkout -b new_branch
 2. Edit files and commit until done/fixed
 3. Run tests with tox
 4. Run coverage with cov.sh
-5. Merge changes from new branch into `dev` **as a merge commit, not a
+
+
+### Update Master and Merge
+
+1. Update `master`
+
+```bash
+$ git checkout master
+$ git fetch origin
+$ git diff master origin/master
+$ git merge origin/master
+```
+
+2. Rebase the feature branch onto the tip of `master` (see discussion after)
+
+```bash
+$ git checkout new_branch
+$ git rebase master
+```
+
+3. Merge changes from new branch into `master` **as a merge commit, not a
    fast-forward** (see discussion after)
 
 ```bash
-$ git checkout dev
+$ git checkout master
 $ git merge --no-ff new_branch
 ```
 
@@ -65,7 +85,7 @@ $ git merge --no-ff new_branch
 
 ### Fix Any Problems with Release Candidate Version
 
-1. Make necessary changes...
+1. Make necessary changes.
 
 2. Go to previous phase, make another release candidate, test, rinse, repeat
 
@@ -73,26 +93,19 @@ $ git merge --no-ff new_branch
 
 1. Bump version number to `X.Y.Z` in `setup.py` **and ACTUALLY COMMIT this time**
 
-2. Merge changes from `dev` into `master`
-
-    ```bash
-    $ git checkout master
-    $ git merge --no-ff dev
-    ```
-
-3. Tag the release
+2. Tag the release
 
     ```bash
     $ git tag X.Y.Z
     ```
 
-4. Build final release version
+3. Build final release version
 
     ```bash
     $ python setup.py sdist bdist_wheel
     ```
 
-5. Upload final release version
+4. Upload final release version
 
     ```bash
     $ twine upload dist/morenines-X.Y.Z.tar.gz dist/morenines-X.Y.Z-py2.py3-none-any.whl
@@ -106,23 +119,33 @@ Note that we do not specify `dist/morenines-X.Y.Z*` because that would upload th
 
 In this project:
 
-- `master` holds full released versions
-- `dev` is for:
-    - collecting and preparing finished features, bug fixes
-    - tooling and environment changes
+- feature branches contain:
+    - new features, changes, improvements and bug fixes that are:
+    - non-trivial, cohesive code changes that exist as a logical atomic changeset
+- `master` contains:
+    - tagged release versions
+    - feature branch merge commits
+    - reasonably small bug fixes/typo fixes/etc. commits
+    - tooling and environment change commits
     - project resource changes (README, etc.)
-- separate feature and bugfix branches are for actual development and
-  testing
 
 There isn't one right way to do this, and this isn't an issue of dogma; if this
 branching model starts to be a problem, we can do things differently. This is
 just what we're doing for now.
 
+### Rebasing
+
+We use rebase for local, non-shared work, following the standard dogma about
+not modifying published history. It is cleaner to rebase feature branches onto
+the tip of master and resolving any resulting issues before pushing.
+
 ### Merging
 
-Merges from feature branches to `dev`, and from `dev` to `master`, are done as
-`--no-ff` merges.  While these could be fast-forwards, for now, they're being
-kept visible as separate merges.
+Merges from feature branches to `master` are done as `--no-ff` merges.  While
+these could be fast-forwards, for now, they're being kept visible as separate
+merges. This is both to make it obvious where the development occurred, instead
+of it springing forth Athena-like, as well as to make the progression in the
+feature branch obvious.
 
 There isn't one right way to do this, and this isn't an issue of dogma; if
 `--no-ff` starts to be a problem, we can do things differently. This is just
