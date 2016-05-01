@@ -48,7 +48,11 @@ def init(repo, repo_path):
     if not repo_path:
         repo_path = default_repo_path()
 
-    repo.create(repo_path)
+    try:
+        repo.create(repo_path)
+    except PathError as e:
+        error(e)
+        abort()
 
     success("Initialized empty morenines repository in {}".format(repo.mn_dir_path))
 
@@ -61,7 +65,11 @@ def add(repo, paths):
 
     Must be called from inside an existing repository.
     """
-    repo.open(default_repo_path())
+    try:
+        repo.open(default_repo_path())
+    except PathError as e:
+        error(e)
+        abort()
 
     if not paths:
         warning("No action taken (supply one or more PATHS to files to add to the repository)")
@@ -93,7 +101,11 @@ def remove(repo, paths):
 
     Must be run while inside a repository.
     """
-    repo.open(default_repo_path())
+    try:
+        repo.open(default_repo_path())
+    except PathError as e:
+        error(e)
+        abort()
 
     if not paths:
         warning("No action taken (supply one or more PATHS to files to add to the repository)")
@@ -127,7 +139,11 @@ def status(ctx, repo, show_ignored, show_color, verify):
 
     Must be called from inside an existing repository.
     """
-    repo.open(default_repo_path())
+    try:
+        repo.open(default_repo_path())
+    except PathError as e:
+        error(e)
+        abort()
 
     new_files, missing_files, ignored_files = get_new_and_missing(repo, show_ignored)
 
@@ -155,7 +171,11 @@ def edit_ignores(repo):
 
     Must be called from inside an existing repository.
     """
-    repo.open(default_repo_path())
+    try:
+        repo.open(default_repo_path())
+    except PathError as e:
+        error(e)
+        abort()
 
     click.edit(filename=repo.ignore_path)
 
