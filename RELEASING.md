@@ -99,13 +99,20 @@ $ git merge --no-ff new_branch
     $ git tag X.Y.Z
     ```
 
-3. Build final release version
+3. Push `master` and the new tag
+
+    ```bash
+    $ git push origin master
+    $ git push --tags
+    ```
+
+4. Build final release version
 
     ```bash
     $ python setup.py sdist bdist_wheel
     ```
 
-4. Upload final release version
+5. Upload final release version
 
     ```bash
     $ twine upload dist/morenines-X.Y.Z.tar.gz dist/morenines-X.Y.Z-py2.py3-none-any.whl
