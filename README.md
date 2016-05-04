@@ -2,7 +2,38 @@
 
 morenines hashes your files and, later, can tell you if they have changed.
 
+Much like Git, information about your files is stored in a **repository**, in
+a hidden directory named `.morenines`.
+
+To start using morenines, you initialize a repository and then add paths to it.
+Later, you can verify that your files have not changed.
+
+Morenines does not modify your files. It just tells you if they have changed.
+
+## Short Usage
+
+```bash
+$ cd ~/photos
+$ mn init .
+SUCCESS: Initialized empty morenines repository in /home/mnuser/photos/.morenines
+$ mn add 2016/camping_trip
+SUCCESS: Files added to repository:
+  2016/camping_trip/DSC0003.jpg
+  2016/camping_trip/DSC0003.jpg
+  2016/camping_trip/DSC0003.jpg
+
+# (time passes...)
+$ mn status --verify
+Changed files (hash differs from index):
+  2016/camping_trip/DSC0003.jpg
+```
+
+If you haven't edited it, a JPEG should not change. So now you know that you
+need to restore `DSC0003.jpg` from a backup.
+
 ## Usage
+
+#### Starting out
 
 We have some files.
 
@@ -11,100 +42,105 @@ $ cd ~/photos
 $ ls -1
 DSC0001.jpg
 DSC0002.jpg
-notes.txt
 TEMPFILE.dat
+notes.txt
 ```
 
-Let's track those files.
+Let's track those files. First, initialize the repository:
 
 ```bash
-$ mn create
-SUCCESS: Wrote index file /Users/example/photos/.mnindex
+$ mn init
+SUCCESS: Initialized empty morenines repository in /home/mnuser/photos/.morenines
 ```
 
-We'll make some changes, and then verify the index to see any changes.
+And then, add the files to the repository:
 
 ```bash
-$ rm TEMPFILE.dat
-$ echo "lorem ipsum" >> notes.txt
-$ touch a_new_file.txt
-$ mn verify
+$ mn add DSC0001.jpg DSC0002.jpg TEMPFILE.dat notes.txt
+SUCCESS: Files added to repository:
+  DSC0001.jpg
+  DSC0002.jpg
+  TEMPFILE.dat
+  notes.txt
+```
+
+#### Adding and removing files
+
+Now the files are tracked in the repository by their content. We can get the
+status of the repository:
+
+```bash
+$ mn status
+Index is up-to-date (no changes)
+```
+
+If we add a file, we can then run `mn status` to see the change:
+
+```bash
+$ echo "a new file" > new_file.txt
+$ mn status
 New files (not in index):
-  a_new_file.txt
+  new_file.txt
+```
 
+We can add the new file:
+
+```bash
+$ mn add new_file.txt 
+SUCCESS: Files added to repository:
+  new_file.txt
+```
+
+Note that this **does not do anything to `new_file.txt`**; it merely reads
+`new_file.txt`, computes information about it, and stores that information in
+the repository.
+
+We can also use `status` to seesee if a file is missing:
+
+```bash
+$ rm TEMPFILE.dat 
+remove TEMPFILE.dat? y
+$ mn status
 Missing files:
   TEMPFILE.dat
+```
 
+If this is intentional, we can tell `morenines` to forget about that file:
+
+```bash
+$ mn remove TEMPFILE.dat
+SUCCESS: Files removed from repository:
+  TEMPFILE.dat
+```
+
+Note that this **does not do anything to `TEMPFILE.dat`**; it merely removes the
+information about `TEMPFILE.dat` from the repository.
+
+#### Detecting changed files
+
+Here's the meat of it. We can use the `--verify` option of the `status` command
+to re-hash the tracked files and see if their content has changed:
+
+```bash
+$ echo "some new content" >> notes.txt 
+$ mn status
+Index is up-to-date (no changes)
+$ mn status --verify
 Changed files (hash differs from index):
   notes.txt
 ```
 
-## Full List of Options
-```bash
-$ mn  --help
-Usage: __main__.py [OPTIONS] COMMAND [ARGS]...
+Now you know that the content of `notes.txt` has changed. If this is
+unexpected, you know that you need to restore `notes.txt` from a backup.
 
-  A tool to track whether the content of files has changed.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  create        Write a new index file
-  edit-ignores  Open the ignores file in an editor
-  init          Initialize a new morenines repository
-  status        Show new, missing or ignored files
-  update        Update an existing index file
-```
+If it was expected, however, you can communicate this to morenines by using
+`remove` and then `add` on that path:
 
 ```bash
-$ mn create --help
-Usage: __main__.py create [OPTIONS] [REPO_PATH]
-
-  Write a new index file with the hashes of files under it.
-
-Options:
-  --help  Show this message and exit.
-```
-
-```bash
-$ mn edit-ignores --help
-Usage: __main__.py edit-ignores [OPTIONS] [REPO_PATH]
-
-  Open an existing or a new ignores file in an editor.
-
-Options:
-  --help  Show this message and exit.
-```
-
-```bash
-$ mn status --help
-Usage: __main__.py status [OPTIONS] [REPO_PATH]
-
-  Show any new files not in the index, index files that are missing, or
-  ignored files.
-
-Options:
-  --color / --no-color          Enable/disable colorized output.
-  -i, --ignored / --no-ignored  Enable/disable showing files ignored by the
-                                ignores patterns.
-  --verify / --no-verify        Re-hash all files in index and check for
-                                changes
-  --help                        Show this message and exit.
-```
-
-```bash
-$ mn update --help
-Usage: __main__.py update [OPTIONS] [REPO_PATH]
-
-  Update an existing index file with new file hashes, missing files removed,
-  etc.
-
-Options:
-  --add-new / --no-add-new        Hash and add any files that aren't in the
-                                  index
-  --remove-missing / --no-remove-missing
-                                  Delete any the hashes of any files in the
-                                  index that no longer exist.
-  --help                          Show this message and exit.
+$ mn remove notes.txt
+SUCCESS: Files removed from repository:
+  notes.txt
+$ mn add notes.txt
+SUCCESS: Files added to repository:
+  notes.txt
 ```
